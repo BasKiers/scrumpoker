@@ -42,4 +42,7 @@ Thumbs.db
 # Temporary files
 *.swp
 *.swo
-*~ 
+*~
+
+# Ignore Cloudflare Wrangler build/config artifacts
+workers/api/notification/.wrangler/ 
