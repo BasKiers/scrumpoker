@@ -12,17 +12,19 @@ interface SessionMeta {
 export class WebSocketDO implements DurableObject {
   private state: DurableObjectState;
   private sessions: Map<string, WebSocket>;
+  private db: D1Database;
 
-  constructor(state: DurableObjectState) {
+  constructor(state: DurableObjectState, env: { DB: D1Database }) {
     this.state = state;
     this.sessions = new Map();
-    // Restore sessions from storage (metadata only, not live sockets)
+    this.db = env.DB;
+    // Restore sessions from SQLite (metadata only, not live sockets)
     this.state.blockConcurrencyWhile(async () => {
-      const stored = await this.state.storage.get<SessionMeta[]>("sessions");
-      if (stored) {
-        for (const meta of stored) {
+      const stored = await this.db.prepare("SELECT sessionId FROM sessions").all();
+      if (stored && stored.results) {
+        for (const row of stored.results) {
           // Sockets themselves cannot be restored, but we keep the session IDs
-          this.sessions.set(meta.sessionId, undefined as any);
+          this.sessions.set(row.sessionId as string, undefined as any);
         }
       }
     });
@@ -43,7 +45,7 @@ export class WebSocketDO implements DurableObject {
     const sessionId = crypto.randomUUID();
     this.sessions.set(sessionId, server);
 
-    // Persist session metadata
+    // Persist session metadata using SQLite
     this.state.waitUntil(this.persistSessions());
 
     // Handle WebSocket messages
@@ -71,8 +73,15 @@ export class WebSocketDO implements DurableObject {
   }
 
   private async persistSessions() {
-    // Only store session IDs (not sockets)
-    const sessionMeta: SessionMeta[] = Array.from(this.sessions.keys()).map(sessionId => ({ sessionId }));
-    await this.state.storage.put("sessions", sessionMeta);
+    // Clear existing sessions in SQLite
+    await this.db.prepare("DELETE FROM sessions").run();
+    // Insert current session IDs
+    const sessionIds = Array.from(this.sessions.keys());
+    if (sessionIds.length > 0) {
+      const stmt = this.db.prepare("INSERT INTO sessions (sessionId) VALUES (?)");
+      for (const sessionId of sessionIds) {
+        await stmt.bind(sessionId).run();
+      }
+    }
   }
 } 
