@@ -9,6 +9,16 @@ export const appRouter = t.router({
     .query(({ input }) => {
       return { greeting: `Hello, ${input.name ?? 'World'}!` };
     }),
+  connect: t.procedure
+    .input(z.object({ id: z.string() }))
+    .mutation(async ({ input, ctx }) => {
+      // The actual WebSocket upgrade will be handled by the worker
+      // This route just returns the connection details
+      return {
+        url: `/ws/${input.id}`,
+        protocol: 'ws',
+      };
+    }),
 });
 
 export type AppRouter = typeof appRouter; 

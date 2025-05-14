@@ -2,4 +2,13 @@ name = "notification-worker"
 main = "index.ts"
 compatibility_date = "2024-05-14"
 [build.upload]
-format = "modules" 
+format = "modules"
+
+[durable_objects]
+bindings = [
+  { name = "WEBSOCKET", class_name = "WebSocketDO" }
+]
+
+[[migrations]]
+tag = "v1"
+new_classes = ["WebSocketDO"] 
