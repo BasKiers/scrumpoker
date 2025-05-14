@@ -8,16 +8,6 @@ command = "pnpm build"
 [dev]
 port = 8787
 
-[[d1_databases]]
-binding = "DB"
-database_name = "notification_db"
-database_id = "notification_db"
-migrations_dir = "migrations"
-
 [[durable_objects.bindings]]
 name = "WEBSOCKET"
-class_name = "WebSocketDO"
-
-[[migrations]]
-tag = "v1"
-new_classes = ["WebSocketDO"] 
+class_name = "WebSocketDO" 

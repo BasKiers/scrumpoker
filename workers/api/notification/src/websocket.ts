@@ -12,25 +12,13 @@ interface SessionMeta {
 
 export class WebSocketDO implements DurableObject {
   private state: DurableObjectState;
-  private db: D1Database;
   private readonly SESSION_TIMEOUT = 24 * 60 * 60 * 1000; // 24 hours
 
-  constructor(state: DurableObjectState, env: { DB: D1Database }) {
+  constructor(state: DurableObjectState) {
     this.state = state;
-    this.db = env.DB;
-    // Initialize the database if needed
+    // Clean up stale sessions on startup
     this.state.blockConcurrencyWhile(async () => {
-      try {
-        await this.db.prepare(`
-          CREATE TABLE IF NOT EXISTS sessions (
-            sessionId TEXT PRIMARY KEY,
-            lastActivity INTEGER NOT NULL
-          )
-        `).run();
-        await this.cleanupStaleSessions();
-      } catch (error) {
-        console.error('Failed to initialize database:', error);
-      }
+      await this.cleanupStaleSessions();
     });
   }
 
@@ -64,7 +52,6 @@ export class WebSocketDO implements DurableObject {
       const data = JSON.parse(message.toString());
       // Update last activity timestamp
       this.state.waitUntil(this.updateSessionMetadata(ws.toString()));
-      
       // Handle different message types
       switch (data.type) {
         case 'ping':
@@ -92,9 +79,7 @@ export class WebSocketDO implements DurableObject {
         sessionId,
         lastActivity: Date.now(),
       };
-      await this.db.prepare(
-        "INSERT OR REPLACE INTO sessions (sessionId, lastActivity) VALUES (?, ?)"
-      ).bind(sessionId, meta.lastActivity).run();
+      await this.state.storage.put(sessionId, meta);
     } catch (error) {
       console.error('Failed to update session metadata:', error);
     }
@@ -102,9 +87,7 @@ export class WebSocketDO implements DurableObject {
 
   private async cleanupSession(sessionId: string) {
     try {
-      await this.db.prepare(
-        "DELETE FROM sessions WHERE sessionId = ?"
-      ).bind(sessionId).run();
+      await this.state.storage.delete(sessionId);
     } catch (error) {
       console.error('Failed to cleanup session:', error);
     }
@@ -112,10 +95,13 @@ export class WebSocketDO implements DurableObject {
 
   private async cleanupStaleSessions() {
     try {
+      const all = await this.state.storage.list<SessionMeta>();
       const cutoff = Date.now() - this.SESSION_TIMEOUT;
-      await this.db.prepare(
-        "DELETE FROM sessions WHERE lastActivity < ?"
-      ).bind(cutoff).run();
+      for (const [key, meta] of all.entries()) {
+        if (meta.lastActivity < cutoff) {
+          await this.state.storage.delete(key);
+        }
+      }
     } catch (error) {
       console.error('Failed to cleanup stale sessions:', error);
     }
