@@ -45,4 +45,7 @@ Thumbs.db
 *~
 
 # Ignore Cloudflare Wrangler build/config artifacts
-workers/api/notification/.wrangler/ 
+workers/api/notification/.wrangler/
+
+# Cursor IDE
+.cursor/ 
