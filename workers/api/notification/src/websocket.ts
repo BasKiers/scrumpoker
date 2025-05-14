@@ -18,9 +18,19 @@ export class WebSocketDO implements DurableObject {
   constructor(state: DurableObjectState, env: { DB: D1Database }) {
     this.state = state;
     this.db = env.DB;
-    // Clean up stale sessions on startup
+    // Initialize the database if needed
     this.state.blockConcurrencyWhile(async () => {
-      await this.cleanupStaleSessions();
+      try {
+        await this.db.prepare(`
+          CREATE TABLE IF NOT EXISTS sessions (
+            sessionId TEXT PRIMARY KEY,
+            lastActivity INTEGER NOT NULL
+          )
+        `).run();
+        await this.cleanupStaleSessions();
+      } catch (error) {
+        console.error('Failed to initialize database:', error);
+      }
     });
   }
 
@@ -77,25 +87,37 @@ export class WebSocketDO implements DurableObject {
   }
 
   private async updateSessionMetadata(sessionId: string) {
-    const meta: SessionMeta = {
-      sessionId,
-      lastActivity: Date.now(),
-    };
-    await this.db.prepare(
-      "INSERT OR REPLACE INTO sessions (sessionId, lastActivity) VALUES (?, ?)"
-    ).bind(sessionId, meta.lastActivity).run();
+    try {
+      const meta: SessionMeta = {
+        sessionId,
+        lastActivity: Date.now(),
+      };
+      await this.db.prepare(
+        "INSERT OR REPLACE INTO sessions (sessionId, lastActivity) VALUES (?, ?)"
+      ).bind(sessionId, meta.lastActivity).run();
+    } catch (error) {
+      console.error('Failed to update session metadata:', error);
+    }
   }
 
   private async cleanupSession(sessionId: string) {
-    await this.db.prepare(
-      "DELETE FROM sessions WHERE sessionId = ?"
-    ).bind(sessionId).run();
+    try {
+      await this.db.prepare(
+        "DELETE FROM sessions WHERE sessionId = ?"
+      ).bind(sessionId).run();
+    } catch (error) {
+      console.error('Failed to cleanup session:', error);
+    }
   }
 
   private async cleanupStaleSessions() {
-    const cutoff = Date.now() - this.SESSION_TIMEOUT;
-    await this.db.prepare(
-      "DELETE FROM sessions WHERE lastActivity < ?"
-    ).bind(cutoff).run();
+    try {
+      const cutoff = Date.now() - this.SESSION_TIMEOUT;
+      await this.db.prepare(
+        "DELETE FROM sessions WHERE lastActivity < ?"
+      ).bind(cutoff).run();
+    } catch (error) {
+      console.error('Failed to cleanup stale sessions:', error);
+    }
   }
 } 

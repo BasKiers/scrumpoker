@@ -179,10 +179,19 @@ importers:
       '@github-notifier/notification-trpc':
         specifier: workspace:*
         version: link:../../../packages/workers/notification-trpc
+      '@hono/trpc-server':
+        specifier: ^0.3.4
+        version: 0.3.4(@trpc/server@11.1.2)(hono@4.7.9)
+      hono:
+        specifier: ^4.7.9
+        version: 4.7.9
     devDependencies:
       '@cloudflare/workers-types':
-        specifier: ^4.20240208.0
+        specifier: ^4.20250514.0
         version: 4.20250514.0
+      typescript:
+        specifier: ^5.0.0
+        version: 5.8.3
       wrangler:
         specifier: ^4.14.4
         version: 4.14.4(@cloudflare/workers-types@4.20250514.0)
@@ -2335,6 +2344,17 @@ packages:
 
   /@fontsource/roboto@5.2.5:
     resolution: {integrity: sha512-70r2UZ0raqLn5W+sPeKhqlf8wGvUXFWlofaDlcbt/S3d06+17gXKr3VNqDODB0I1ASme3dGT5OJj9NABt7OTZQ==}
+    dev: false
+
+  /@hono/trpc-server@0.3.4(@trpc/server@11.1.2)(hono@4.7.9):
+    resolution: {integrity: sha512-xFOPjUPnII70FgicDzOJy1ufIoBTu8eF578zGiDOrYOrYN8CJe140s9buzuPkX+SwJRYK8LjEBHywqZtxdm8aA==}
+    engines: {node: '>=16.0.0'}
+    peerDependencies:
+      '@trpc/server': ^10.10.0 || >11.0.0-rc
+      hono: '>=4.*'
+    dependencies:
+      '@trpc/server': 11.1.2(typescript@5.8.3)
+      hono: 4.7.9
     dev: false
 
   /@humanfs/core@0.19.1:
@@ -6254,6 +6274,11 @@ packages:
     resolution: {integrity: sha512-/gGivxi8JPKWNm/W0jSmzcMPpfpPLc3dY/6GxhX2hQ9iGj3aDfklV4ET7NjKpSinLpJ5vafa9iiGIEZg10SfBw==}
     dependencies:
       react-is: 16.13.1
+    dev: false
+
+  /hono@4.7.9:
+    resolution: {integrity: sha512-/EsCoR5h7N4yu01TDu9GMCCJa6ZLk5ZJIWFFGNawAXmd1Tp53+Wir4xm0D2X19bbykWUlzQG0+BvPAji6p9E8Q==}
+    engines: {node: '>=16.9.0'}
     dev: false
 
   /hosted-git-info@7.0.2:
