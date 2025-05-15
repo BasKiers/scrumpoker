@@ -1,0 +1,171 @@
+<context>
+# Overview  
+During jira ticket refinement we estimate the amount of story points as a team. We would like to have a webpage that allows you to create a "room" which others can join to estimate the story points of a ticket collaboratively.
+
+# Core Features  
+* Ability to create a room
+  - Anyone can create a new room for others to join
+  - This way anyone can start collaborating on the story pointing process
+  - The homepage should have a button that allows the user to create a new room. 
+    Creating a room is done by generating a nanoid (`npm install nanoid`) and redirecting the user to the `/room/${nanoid}` url.
+* Ability to join a room
+  - Anyone can join any existing or non-existing room by connecting to the websocket of the DurableObject with a room ID and a user ID that is a generated nanoid
+    - If the localstorage already has a userId stored this one will be used to connect to the websocket instead
+    - If there was no userId in the localstorage, the generated userId will be stored in the localstorage alongside establishing the connection with the websocket
+  - If the DurableObject for the room ID does not yet exist an DurableObject will be instantiated with only the just joined user in the participants record
+  - If the DurableObject for the room ID already exists the user is added to the record of participants
+  - When the websocket connection is established the browser will receive the current state of the room, including their own userId in the participants record
+  - An event will be broadcasted to all connected clients with the new participant object which they will add to their in memory participants state
+* Ability to set or your name
+  - Once the websocket connection is established the client will check whether their userId already has a name assigned to it and if so will skip this step
+  - The user can submit their name by entering it in an input field on the UI and pressing the next button. This will send an websocket event
+  - The name is added to the participant record for the connected userId through a specific event type
+  - When the name for a userId changes, all connected clients (including the one of the userId) will receive the updated participant object which they will overwrite in their in memory state
+  - When the name of the userId is set the browser of that user will no longer see the name input box but instead the main "room ui"
+* Ability to leave a room
+  - When a websocket connection is closed, the DurableObject will loop over all the open connections to find a connection with the same userId
+  - If the closed connection was the last connection connected with a userId, the participant object in the participants record for that userId will be deleted
+  - If a participant is deleted from the participants record an event will be fired to all connected clients
+  - Clients that receive a message that a participant is deleted will also delete the participant with that userId from their in memory state
+* Ability to select a story point card
+  - There are buttons for `?`, `1`, `2`, `3`, `5`, `8`, `13` and `20` story points. These buttons are styled to look like playing cards
+  - When a card is selected a websocket event will be fired with the selected card id. This value will be added to the participant object in the participants record for the connected userId
+  - When a card is selected by a user, all connected clients (including the one of the userId) will receive the updated participant object which they will overwrite in their in memory state
+  - When the client receives an event that their userId has a card selected, the UI will show the card as selected by highlighting it
+* See a list of all particpants and their selected story point card
+  - On the page a table is shown of all participant names including the userId's own username
+  - Participants without a name are not shown in the table
+  - When a participant has a card selected the table will show a card face-down so the value the participant has selected cannot be seen
+  - When a participant is joins or leaves, the table will update to reflect this.
+* Any participant can click a button "show cards" to reveal all story point cards
+  - Above the table of all participants a button should be shown that will toggle whether the cards are shown or hidden
+  - If the cards are currently hidden, the button will send an event to the websocket to reveal the cards
+  - If the cards are currently shown, the button will send an event to the websocket to hide the cards
+  - When a message comes in to reveal or hide the cards the card_status property of the DurableObject will be set accordingly
+  - An event will be sent to all connected clients with the new card_status value, all clients will update their local state accordingly
+  - When the card_status changes, the cards in the table of the clients should either reveal the story points by showing the card face up or hide the story points by showing the card face down
+  - When the card_status changes, the button that toggles the card_status on the client should change to allow the user to do the opposite action
+* All cards are automatically revealed if all named participants have selected a story point card
+  - When the event that selects a story point card for the user now causes all participants with a name to have a card selected, and the card_status is hidden, the card_status will be set to revealed and all clients will receive the card_status updated event
+* Any participant can click a "Reset" button to reset the state in the DurableObject
+  - Next to the button that toggles the card_status this "Reset" button should be shown
+  - If the current card_status is not set to reveal, and at least one participant has a story point card selected, a confirmation modal will pop up asking the customer wether they are sure they want to reset all story point estimations 
+  - Clicking the button (or, if appliccable the button of the conformation modal) will send an event to the websocket
+  - This event will cause the DurableObject to reset the card_status to hidden and remove all story point selections from all participants in the participants record
+  - Afterwards, the Durable object will send a reset-state event to all connected clients containing the whole state of the DurableObject. This is the same message as is sent when a client connects to the websocket the first time.
+  - All connected clients will replace their in-memory state with the state from the DurableObject.
+
+# User Experience  
+* Scrummaster
+  - Goes to the homepage of the app to create a room for their team to use for a refinement session.
+    1. The create room button should be prominently visible on the homepage centered in the hero component.
+    2. When the room is created the URL of the room should be shown on the webpage in an box where the text is easily selectable
+    3. Next to the URL, a copy url button with a copy icon should allow the user to directly copy the url to their clipboard
+    4. They will likely send the URL to the team or store it in the documentation or slack as a permanent link
+    5. This user might not need to join the room themselves, we should allow them to skip entering a name to be able to interact with the room without participating
+* Teammember
+  - Opens an existing room to participate in collaborative story pointing during a refinement session
+    1. Will open an already created room by going to a room url that was shared with them
+    2. If the roomId was not shared with them, they should be able to go to a room by entering the roomId manually in an input field at the top banner of the homepage and pressing a join button
+    3. When joining the room they will enter their name (if they have not already joined with their userId in a different browser tab)
+    4. The user sees all named participants join the room and will discuss the jira ticket through a different tool (e.g. zoom)
+    5. Once all teammembers are ready to estimate the story points for a ticket they will each select a story point card
+    6. Once enough team members have selected a card one of the teammembers will press the show cards button
+    7. All cards will be revealed, which might spark a discussion through the different tool
+    8. It could be that a teammember will update their story point card after the cards were revealed. This will be visible for all other teammembers
+    9. Once there is a consensus on the amount of story points a teammember will press the reset button which will remove all selected cards from all participants
+    10. The teammembers will either repeat the process from step 5. or leave the room by closing the browser tab which will close the websocket connection and remove the participant object from the DurableObject
+* Product Manager
+  - Opens an existing room to spectate the collaborative story pointing session
+    1. Will open an already created room by going to a room url that was shared with them
+    2. If the roomId was not shared with them, they should be able to go to a room by entering the roomId manually in an input field at the top banner of the homepage and pressing a join button
+    3. When joining the room they will opt to skip entering their name so they will not be shown in the table of all participants that participate in story point scoring
+    4. If the user has not submitted a name the story point cards will not sent a websocket event when clicked
+
+# Technical Architecture  
+- React frontend
+  - Hosted on Cloudflare pages
+- tRPC backend
+  - Hosted on Cloudflare workers
+- Object storage
+  - Hosted with Cloudflare DurableObjects
+  - Implements websockets with hibernation to coordinate state changes through websocket connections
+  - For each room id a DurableObject will be spun up when accessed
+
+# Development Roadmap  
+- MVP requirements
+  - have an url with a roomId on the frontend
+    - Going to the route will generate a userId and connect to the websockets
+  - The userId used when opening the websocket will be added to the Participants array with the name defaulted to the userId string value
+  - Selecting a card should reflect the state in the DurableObject and broadcast the event to all connected clients
+  - All participants should be shown in a table on the UI with the story point cards they selected visible
+  - Add a button to reset the state
+- Future enhancements
+  - Store the userId in localstorage so subsequent chrome tabs will use the same userId
+  - Have a modal when entering the room that allows the user to set a name and update this in the DurableObject, entering a name can be skipped
+    - This should remove the logic in the DurableObject that sets the name to the userId by default
+  - Hide particpants from the table in the room UI that do not have a name
+  - Have a homepage with a button to create a new room by generating a new ID
+  - Have a top bar on the homepage with a input field to join a room ID
+  - Add the ability to show and hide the selected story point cards. The initial/resetted state of the DurableObject always has the cards hidden.
+  - Have the story point cards styled like playing cards
+  - Animate selecting the story point card
+  - Animate showing/hiding story point cards in the table
+  - Do optimistic UI updates when selecting a story point card. If no update is received from the websocket in 5 seconds revert the local state change
+  - Do optimistic UI updates when revealing/hiding story point cards. If no update is received from the websocket in 5 seconds revert the local state change
+
+# Logical Dependency Chain
+- Let's start with a Room UI without any webhook events.
+  - The UI should have buttons/cards for story points that can handle click events
+  - The UI should have a table that shows other participants. For now lets hardcode 2 participants in the in-memory state, John Doe that has a story point card selected with value `2` and Jane Doe that has no card selected
+- Create a package for the room state types
+  - This package will have types for the state object that we will sync between the Frontend and the backend
+  - This package will have the event type definitions that are used to communicate with the websocket server
+  - This package will have the event type definitions that can be sent from the websocket server to the client
+- Introduce the DurableObject using websocket hibernation
+  - Implement logic opening DurableObject with the roomId and store the userId from the same connection request along with the websocket state
+  - When a websocket connection is opened add the userId in an participant object to the participants record that is part of the state object
+  - When a websocket connection is opened send a event with the full state to the client that just connected
+- Update the UI to connect to the websocket
+  - Connect to the websocket backend sending the roomId from the UI and a randomly generated userId
+  - When the full state sync message comes in populate the in memory state with the received state
+  - Broadcast the connect event to all websocket connections that do not have the current userId associated with it
+  - Remove any mocked state (John & Jane Doe) we used before we implemented the backend connection
+- Show newly joined participants in the participants table
+  - When a connect event comes in from a new participant update the in-memory state to add this participant to the participants record
+  - The state update helper function should set the name of the participant to the userId value by default for now
+  - This should update the table to show the participant as long as it has a name
+- Send events for user interactions and sent them to the websocket
+  - Create an event payload shape and sent it to the websocket when a story point card is selected
+  - Create an event payload shape and sent it to the websocket when the reset button is pressed
+- Implement state updates in the DurableObject based on the new events
+  - When an event comes in that a story point card is selected, update the state and broadcast the event to all connected clients
+    - There should be a utility function in the shared package that can update the global state based on an event, both the DurableObject and all connected clients will use this method to update the state
+  - When an event comes in that the reset button was pressed, reset the state and broadcast the event to all clients
+- Implement a show/hide button in the UI and the backend
+  - When the button is pressed an event should be sent to the websocket
+  - the websocket should broadcast this event to all clients
+- Implement storing the userId in localstorage in the UI
+  - when entering a room, the UI should check localStorage whether there is already a userId chosen
+  - If no userId is chosen it should be generated and stored in the localstorage
+- Implement a modal allowing the user to set their name
+  - When entering a room, when the participant with the clients userId in the state does not have a name, show a modal that allows setting a name
+  - The modal should be skippable
+  - When a name is entered and submitted the participant joined event should be re-sent with the name value set
+    - This event would be the same as opening the same room in a new browser window (sending the same userId) but would also contain the `name` property
+- Implement a landing page
+  - The landing page should have a hero section with a centered button to create a room
+    - Clicking the button will generate a roomId and redirect the user to the room page
+  - The landing page should have a top banner with an input field and submit button to join a room by id. 
+    - This id can be user-generated as long as it contains only base64 characters without whitespaces
+- Implement an easy way to copy the room url
+  - On the name selection modal we want to allow the user to copy the room URL
+
+# Risks and Mitigations  
+- Make sure the DurableObject is making use of the websocket hibernation syntax (see docs: https://developers.cloudflare.com/durable-objects/best-practices/websockets/)
+- Build the frontend app in React
+- Make sure all shared code is abstracted into packages that are imported by both the backend and the frontend project
+
+# Appendix  
+- Make sure to write and update documentation as needed
+- Make sure to write unit tests where possible to validate the happy path
