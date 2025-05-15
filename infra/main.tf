@@ -24,11 +24,18 @@ resource "cloudflare_pages_project" "web_app" {
   source {
     type = "github"
     config {
-      owner = "<GITHUB_OWNER>" # TODO: Replace with your GitHub org/user
-      repo_name = "<GITHUB_REPO>" # TODO: Replace with your repo name
+      owner = "baskiers" # TODO: Replace with your GitHub org/user
+      repo_name = "scrumpoker" # TODO: Replace with your repo name
       production_branch = var.production_branch
     }
   }
+}
+
+resource "cloudflare_worker_script" "scrumpoker_api" {
+  name       = "scrumpoker-api"
+  account_id = var.cloudflare_account_id
+  content    = file("${path.module}/../workers/scrumpoker-api/workers/scrumpoker-api/dist/worker.js")
+  module     = true
 }
 
 # Optionally, add DNS records for custom domain

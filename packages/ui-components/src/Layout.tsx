@@ -29,4 +29,4 @@ export const Layout: React.FC<PropsWithChildren> = ({ children }) => {
       </footer>
     </div>
   );
-}; 
+};
