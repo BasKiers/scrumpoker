@@ -7,4 +7,4 @@ describe('Home page', () => {
     render(<Home />);
     expect(screen.getByRole('heading', { name: /home page/i })).toBeInTheDocument();
   });
-}); 
+});

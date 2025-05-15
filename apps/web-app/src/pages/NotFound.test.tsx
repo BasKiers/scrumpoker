@@ -7,4 +7,4 @@ describe('NotFound page', () => {
     render(<NotFound />);
     expect(screen.getByRole('heading', { name: /404/i })).toBeInTheDocument();
   });
-}); 
+});
