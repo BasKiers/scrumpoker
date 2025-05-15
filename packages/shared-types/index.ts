@@ -143,3 +143,58 @@ const _test3 = isSelectCardEvent(selectCardEvent) as true;
 const _test4 = isSetNameEvent(setNameEvent) as true;
 const _test5 = isToggleCardsEvent(toggleCardsEvent) as true;
 const _test6 = isResetEvent(resetEvent) as true;
+
+/**
+ * Adds a participant to the room state (returns new state).
+ */
+export function addParticipant(state: RoomState, participant: Participant): RoomState {
+  return {
+    ...state,
+    participants: {
+      ...state.participants,
+      [participant.userId]: participant,
+    },
+  };
+}
+
+/**
+ * Removes a participant from the room state (returns new state).
+ */
+export function removeParticipant(state: RoomState, participantId: string): RoomState {
+  const { [participantId]: _, ...rest } = state.participants;
+  return {
+    ...state,
+    participants: rest,
+  };
+}
+
+/**
+ * Updates a participant's properties in the room state (returns new state).
+ */
+export function updateParticipant(state: RoomState, participantId: string, updates: Partial<Participant>): RoomState {
+  const participant = state.participants[participantId];
+  if (!participant) return state;
+  return {
+    ...state,
+    participants: {
+      ...state.participants,
+      [participantId]: { ...participant, ...updates },
+    },
+  };
+}
+
+/**
+ * Sets the active speaker in the room state (returns new state).
+ */
+export function setActiveSpeaker(state: RoomState, participantId: string): RoomState {
+  return {
+    ...state,
+    activeSpeaker: participantId,
+  };
+}
+
+// Type assertion tests for utility functions
+const state1 = addParticipant(sampleRoomState, { userId: 'user-456', name: 'Bob' });
+const state2 = removeParticipant(state1, 'user-123');
+const state3 = updateParticipant(state2, 'user-456', { selectedCard: '8' });
+const state4 = setActiveSpeaker(state3, 'user-456');
