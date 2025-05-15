@@ -8,9 +8,13 @@ function AppRoutes() {
   return useRoutes(routes);
 }
 
-const App: React.FC = () => {
+interface AppProps {
+  Router?: typeof BrowserRouter;
+}
+
+const App: React.FC<AppProps> = ({ Router = BrowserRouter }) => {
   return (
-    <BrowserRouter>
+    <Router>
       <nav>
         <Link to="/">Home</Link>
       </nav>
@@ -21,7 +25,7 @@ const App: React.FC = () => {
       <Suspense fallback={<div>Loading...</div>}>
         <AppRoutes />
       </Suspense>
-    </BrowserRouter>
+    </Router>
   );
 };
 
