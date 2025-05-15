@@ -1,0 +1,10 @@
+name = "web-app"
+type = "javascript"
+compatibility_date = "2024-05-15"
+
+[site]
+bucket = "dist"
+entry-point = "."
+
+[env.production]
+# Add production-specific settings here if needed 
