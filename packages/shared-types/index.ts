@@ -58,42 +58,54 @@ export type WebSocketEvent =
 /**
  * Type guard for connect event
  */
-export function isConnectEvent(event: WebSocketEvent): event is Extract<WebSocketEvent, { type: 'connect' }> {
+export function isConnectEvent(
+  event: WebSocketEvent,
+): event is Extract<WebSocketEvent, { type: 'connect' }> {
   return event.type === 'connect';
 }
 
 /**
  * Type guard for disconnect event
  */
-export function isDisconnectEvent(event: WebSocketEvent): event is Extract<WebSocketEvent, { type: 'disconnect' }> {
+export function isDisconnectEvent(
+  event: WebSocketEvent,
+): event is Extract<WebSocketEvent, { type: 'disconnect' }> {
   return event.type === 'disconnect';
 }
 
 /**
  * Type guard for select_card event
  */
-export function isSelectCardEvent(event: WebSocketEvent): event is Extract<WebSocketEvent, { type: 'select_card' }> {
+export function isSelectCardEvent(
+  event: WebSocketEvent,
+): event is Extract<WebSocketEvent, { type: 'select_card' }> {
   return event.type === 'select_card';
 }
 
 /**
  * Type guard for set_name event
  */
-export function isSetNameEvent(event: WebSocketEvent): event is Extract<WebSocketEvent, { type: 'set_name' }> {
+export function isSetNameEvent(
+  event: WebSocketEvent,
+): event is Extract<WebSocketEvent, { type: 'set_name' }> {
   return event.type === 'set_name';
 }
 
 /**
  * Type guard for toggle_cards event
  */
-export function isToggleCardsEvent(event: WebSocketEvent): event is Extract<WebSocketEvent, { type: 'toggle_cards' }> {
+export function isToggleCardsEvent(
+  event: WebSocketEvent,
+): event is Extract<WebSocketEvent, { type: 'toggle_cards' }> {
   return event.type === 'toggle_cards';
 }
 
 /**
  * Type guard for reset event
  */
-export function isResetEvent(event: WebSocketEvent): event is Extract<WebSocketEvent, { type: 'reset' }> {
+export function isResetEvent(
+  event: WebSocketEvent,
+): event is Extract<WebSocketEvent, { type: 'reset' }> {
   return event.type === 'reset';
 }
 
@@ -171,7 +183,11 @@ export function removeParticipant(state: RoomState, participantId: string): Room
 /**
  * Updates a participant's properties in the room state (returns new state).
  */
-export function updateParticipant(state: RoomState, participantId: string, updates: Partial<Participant>): RoomState {
+export function updateParticipant(
+  state: RoomState,
+  participantId: string,
+  updates: Partial<Participant>,
+): RoomState {
   const participant = state.participants[participantId];
   if (!participant) return state;
   return {
@@ -197,4 +213,4 @@ export function setActiveSpeaker(state: RoomState, participantId: string): RoomS
 const state1 = addParticipant(sampleRoomState, { userId: 'user-456', name: 'Bob' });
 const state2 = removeParticipant(state1, 'user-123');
 const state3 = updateParticipant(state2, 'user-456', { selectedCard: '8' });
-const state4 = setActiveSpeaker(state3, 'user-456');
+const _state4 = setActiveSpeaker(state3, 'user-456');
