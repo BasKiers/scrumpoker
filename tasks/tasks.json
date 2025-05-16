@@ -409,7 +409,7 @@
         3,
         5
       ],
-      "status": "in-progress",
+      "status": "done",
       "subtasks": [
         {
           "id": 1,
@@ -417,7 +417,7 @@
           "description": "Develop a reusable confirmation modal component that can be used for confirming reset actions",
           "dependencies": [],
           "details": "1. Create a new React component called ConfirmationModal that accepts props for title, message, confirmButtonText, cancelButtonText, onConfirm, and onCancel functions.\n2. Implement styling using the application's design system (CSS modules or styled-components).\n3. Add animations for modal appearance/disappearance.\n4. Ensure the modal is accessible with proper ARIA attributes and keyboard navigation.\n5. Implement click-outside-to-dismiss functionality.\n6. Add unit tests using Jest and React Testing Library to verify the component renders correctly and handles user interactions properly.",
-          "status": "pending"
+          "status": "done"
         },
         {
           "id": 2,
@@ -436,7 +436,7 @@
             2
           ],
           "details": "1. Add a reset button to the room UI in an appropriate location.\n2. Implement state management to control the visibility of the confirmation modal.\n3. Connect the reset button click handler to show the confirmation modal.\n4. Wire up the confirmation modal's onConfirm handler to call the backend reset API.\n5. Handle the reset response from the server and update the UI accordingly.\n6. Add loading states during the reset process.\n7. Implement error handling for failed reset attempts with user feedback.\n8. Write integration tests to verify the end-to-end reset functionality works correctly.",
-          "status": "pending"
+          "status": "done"
         }
       ]
     },
@@ -459,7 +459,7 @@
           "description": "Implement styling and animations for all card components in the application",
           "dependencies": [],
           "details": "- Design card components with rounded corners (8px radius), subtle shadows (0 2px 4px rgba(0,0,0,0.1)), and consistent padding (16px)\n- Implement hover animations with scale transform (transform: scale(1.02)) and shadow enhancement\n- Create card entry/exit animations using CSS transitions or keyframes (opacity and transform properties)\n- Establish a consistent color scheme for different card states (default, hover, active, disabled)\n- Ensure card content is properly aligned and spaced with flexbox or grid layouts\n- Add subtle border or accent colors to differentiate card types\n- Implement loading state animations for cards with skeleton loaders",
-          "status": "pending"
+          "status": "done"
         },
         {
           "id": 2,
@@ -469,7 +469,7 @@
             1
           ],
           "details": "- Design a clean, scannable participants table with alternating row colors (rgba(0,0,0,0.02) for even rows)\n- Style table headers with proper emphasis (font-weight: 600, slightly larger font-size)\n- Implement hover effects for interactive table rows\n- Create consistent styling for room control buttons (size, padding, border-radius)\n- Design status indicators for participants (online/offline/speaking) using colored dots or icons\n- Implement tooltip styles for additional information on hover\n- Ensure proper spacing between control elements (margin: 12px)\n- Style pagination controls for the participants table\n- Create animations for state changes in room controls (enabled/disabled transitions)",
-          "status": "pending"
+          "status": "done"
         },
         {
           "id": 3,
@@ -491,7 +491,7 @@
             3
           ],
           "details": "- Create media queries for key breakpoints (mobile: 320-480px, tablet: 481-768px, desktop: 769px+)\n- Implement fluid typography using clamp() or calc() for responsive font sizing\n- Design mobile-first layouts that adapt to larger screens\n- Create collapsible/expandable components for mobile views\n- Ensure touch targets are appropriately sized (minimum 44x44px) for mobile users\n- Test and adjust all animations for performance on mobile devices\n- Implement responsive tables that convert to cards or vertical layouts on small screens\n- Ensure modals are properly sized and scrollable on mobile devices\n- Create responsive navigation patterns (hamburger menu for mobile)\n- Test and fix any overflow issues across different viewport sizes",
-          "status": "pending"
+          "status": "done"
         }
       ]
     }

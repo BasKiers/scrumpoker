@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Reorder, motion } from 'framer-motion';
 import type { Participant } from 'shared-types';
-import '../../styles/participants-table.css';
 
 interface ParticipantsTableProps {
   participants: Record<string, Participant>;
@@ -68,53 +67,66 @@ const ParticipantsTable: React.FC<ParticipantsTableProps> = ({
   }, [participants, cardsRevealed, currentUserId]);
 
   return (
-    <div className="participants-table">
-      <table>
-        <thead>
+    <div className="overflow-x-auto">
+      <table className="min-w-full divide-y divide-gray-200">
+        <thead className="bg-gray-50">
           <tr>
-            <th>Name</th>
-            <th>Status</th>
-            <th>Vote</th>
+            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              Name
+            </th>
+            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              Status
+            </th>
+            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              Vote
+            </th>
           </tr>
         </thead>
-        <Reorder.Group as="tbody" axis="y" values={sortedParticipants} onReorder={() => {}}>
+        <Reorder.Group as="tbody" axis="y" values={sortedParticipants} onReorder={() => {}} className="bg-white divide-y divide-gray-200 table-auto">
           {sortedParticipants.map((participant) => (
             <Reorder.Item
               key={participant.userId}
               value={participant}
-              className={participant.userId === currentUserId ? 'current-user' : ''}
+              className={`${participant.userId === currentUserId ? 'bg-blue-50' : ''}`}
+              style={{height: '81px'}}
               as='tr'
               drag={false}
               transition={{ delay: 0.25 }}
             >
-              <td>
+              <td className="px-6 py-4 whitespace-nowrap">
                 <div className="flex items-center">
-                  <div className="participant-avatar">
-                    <span className="text-gray-500 font-medium">
-                      {participant.name?.[0]?.toUpperCase() || '?'}
-                    </span>
+                  <div className="flex-shrink-0 h-10 w-10">
+                    <div className="h-10 w-10 rounded-full bg-gray-200 flex items-center justify-center">
+                      <span className="text-gray-500 font-medium">
+                        {participant.name?.[0]?.toUpperCase() || '?'}
+                      </span>
+                    </div>
                   </div>
                   <div className="ml-4">
-                    <div className="participant-name">
+                    <div className="text-sm font-medium text-gray-900">
                       {participant.name}
                     </div>
                   </div>
                 </div>
               </td>
-              <td>
-                <span className={`status-badge ${participant.selectedCard ? 'voted' : 'waiting'}`}>
+              <td className="px-6 py-4 whitespace-nowrap">
+                <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                  participant.selectedCard 
+                    ? 'bg-green-100 text-green-800' 
+                    : 'bg-gray-100 text-gray-800'
+                }`}>
                   {participant.selectedCard ? 'Voted' : 'Waiting'}
                 </span>
               </td>
-              <td>
+              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                 {participant.selectedCard ? (
                   <motion.div
-                    className={`vote-card ${cardsRevealed ? 'revealed' : 'hidden'} ${
-                      cardsRevealed && participant.selectedCard === mostFrequentCard ? 'most-frequent' : ''
-                    }`}
+                    className="w-8 h-12 rounded border-2 flex items-center justify-center border-gray-500"
                     initial={{ rotateY: 180 }}
                     animate={{
                       rotateY: cardsRevealed ? 0 : 180,
+                      borderColor: cardsRevealed ? participant.selectedCard === mostFrequentCard ? 'oklch(0.623 0.214 259.815)' : 'oklch(70.7% 0.022 261.325)' : 'oklch(0.92 0.004 286.32)',
+                      backgroundColor: cardsRevealed ? '#FFFFFF' : ''
                     }}
                     transition={{ duration: 0.3 }}
                   >
