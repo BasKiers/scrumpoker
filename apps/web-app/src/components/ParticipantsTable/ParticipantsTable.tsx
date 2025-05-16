@@ -82,12 +82,13 @@ const ParticipantsTable: React.FC<ParticipantsTableProps> = ({
             </th>
           </tr>
         </thead>
-        <Reorder.Group as="tbody" axis="y" values={sortedParticipants} className="bg-white divide-y divide-gray-200">
+        <Reorder.Group as="tbody" axis="y" values={sortedParticipants} onReorder={() => {}} className="bg-white divide-y divide-gray-200 table-auto">
           {sortedParticipants.map((participant) => (
             <Reorder.Item
               key={participant.userId}
               value={participant}
               className={`${participant.userId === currentUserId ? 'bg-blue-50' : ''}`}
+              style={{height: '81px'}}
               as='tr'
               drag={false}
               transition={{ delay: 0.25 }}
@@ -103,7 +104,7 @@ const ParticipantsTable: React.FC<ParticipantsTableProps> = ({
                   </div>
                   <div className="ml-4">
                     <div className="text-sm font-medium text-gray-900">
-                      {participant.name || 'Anonymous'}
+                      {participant.name}
                     </div>
                   </div>
                 </div>

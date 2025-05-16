@@ -29,10 +29,6 @@ const NameModal: React.FC<NameModalProps> = ({ isOpen, onSubmit, onSkip, roomUrl
       setError('Name can only contain letters, numbers, and spaces');
       return false;
     }
-    if (value.trim().length === 0) {
-      setError('Name cannot be empty');
-      return false;
-    }
     setError(undefined);
     return true;
   };
@@ -87,6 +83,11 @@ const NameModal: React.FC<NameModalProps> = ({ isOpen, onSubmit, onSkip, roomUrl
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="name">Your Name</Label>
+              {error && (
+                <Alert variant="destructive">
+                  <AlertDescription>{error}</AlertDescription>
+                </Alert>
+              )}
               <Input
                 id="name"
                 value={name}
@@ -94,11 +95,6 @@ const NameModal: React.FC<NameModalProps> = ({ isOpen, onSubmit, onSkip, roomUrl
                 placeholder="Enter your name"
                 autoFocus
               />
-              {error && (
-                <Alert variant="destructive">
-                  <AlertDescription>{error}</AlertDescription>
-                </Alert>
-              )}
             </div>
 
             <div className="flex justify-end gap-2">
