@@ -135,14 +135,14 @@ const Room: React.FC = () => {
                 </div>
                 <div className="mt-6 flex justify-center gap-4">
                   <Button
-                    variant="default"
+                    variant="primary"
                     onClick={handleShowCards}
                     disabled={!Object.values(activeParticipants).some(p => p.selectedCard)}
                   >
                     {card_status === 'revealed' ? 'Hide Cards' : 'Show Cards'}
                   </Button>
                   <Button
-                    variant="destructive"
+                    variant="warning"
                     onClick={handleReset}
                   >
                     Reset
