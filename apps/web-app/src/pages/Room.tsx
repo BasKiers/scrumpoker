@@ -1,36 +1,65 @@
-import React from 'react';
+import React, { useState, useCallback } from 'react';
 import { useParams } from 'react-router-dom';
 import StoryPointCard from '../components/StoryPointCard';
 import ParticipantsTable from '../components/ParticipantsTable';
-import { useRoomActions } from '../hooks/useRoomActions';
-import { useRoomStore } from '../store/roomStore';
 import { Button } from '../components/ui/button';
 import { Alert, AlertDescription } from '../components/ui/alert';
+import { useWebSocket } from '../hooks/useWebSocket';
+import { getUserId } from '../utils/localStorage';
+import type { WebSocketResponse, RoomState } from 'shared-types';
 
 const STORY_POINTS = ['?', '1', '2', '3', '5', '8', '13', '20'];
 
 const Room: React.FC = () => {
   const { roomId } = useParams<{ roomId: string }>();
-  const [currentUserId] = React.useState('user-1'); // TODO: Replace with actual user ID
-
-  const { selectCard, toggleCards, reset } = useRoomActions({
-    roomId: roomId || 'default',
-    userId: currentUserId,
+  const [currentUserId] = React.useState(getUserId());
+  const [connected, setConnected] = useState(false);
+  const [error, setError] = useState<string>();
+  const [roomState, setRoomState] = useState<RoomState>({
+    roomId: roomId || '',
+    participants: {},
+    card_status: 'hidden'
   });
 
-  const { participants, card_status, error } = useRoomStore();
+  const handleMessage = useCallback((data: WebSocketResponse) => {
+    if (data.type === 'state_sync') {
+      setRoomState(data.state);
+      setError(undefined);
+    } else if (data.type === 'error') {
+      setError(data.error);
+    }
+  }, []);
+
+  const { sendEvent } = useWebSocket({
+    roomId: roomId || '',
+    userId: currentUserId,
+    onConnect: () => setConnected(true),
+    onDisconnect: () => setConnected(false),
+    onMessage: handleMessage,
+    onError: (error) => setError(error)
+  });
 
   const handleCardSelect = (value: string) => {
-    selectCard(value);
+    sendEvent({ type: 'select_card', userId: currentUserId, cardValue: value });
   };
 
   const handleShowCards = () => {
-    toggleCards();
+    sendEvent({ type: 'toggle_cards', value: roomState.card_status === 'hidden' ? 'revealed' : 'hidden' });
   };
 
   const handleReset = () => {
-    reset();
+    sendEvent({ type: 'reset' });
   };
+
+  if (!connected) {
+    return (
+      <div className="room-page min-h-screen bg-gray-50 flex items-center justify-center">
+        <Alert>
+          <AlertDescription>Connecting to room...</AlertDescription>
+        </Alert>
+      </div>
+    );
+  }
 
   return (
     <div className="room-page min-h-screen bg-gray-50">
@@ -53,8 +82,8 @@ const Room: React.FC = () => {
               <div className="px-4 py-5 sm:p-6">
                 <h2 className="text-lg font-medium text-gray-900 mb-4">Participants</h2>
                 <ParticipantsTable
-                  participants={participants}
-                  cardsRevealed={card_status === 'revealed'}
+                  participants={roomState.participants}
+                  cardsRevealed={roomState.card_status === 'revealed'}
                   currentUserId={currentUserId}
                 />
               </div>
@@ -69,7 +98,7 @@ const Room: React.FC = () => {
                     <StoryPointCard
                       key={value}
                       value={value}
-                      selected={participants[currentUserId]?.selectedCard === value}
+                      selected={roomState.participants[currentUserId]?.selectedCard === value}
                       onClick={() => handleCardSelect(value)}
                     />
                   ))}
@@ -78,9 +107,9 @@ const Room: React.FC = () => {
                   <Button
                     variant="default"
                     onClick={handleShowCards}
-                    disabled={Object.values(participants).some(p => !p.selectedCard)}
+                    disabled={Object.values(roomState.participants).some(p => !p.selectedCard)}
                   >
-                    {card_status === 'revealed' ? 'Hide Cards' : 'Show Cards'}
+                    {roomState.card_status === 'revealed' ? 'Hide Cards' : 'Show Cards'}
                   </Button>
                   <Button
                     variant="secondary"
