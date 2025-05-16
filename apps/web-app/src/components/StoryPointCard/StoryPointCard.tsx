@@ -16,8 +16,7 @@ const StoryPointCard: React.FC<StoryPointCardProps> = ({
 }) => {
   const cardY = useMotionValue(0);
   const rotateX = useTransform(cardY, [0, 300], [0, -14]);
-  const cardRotateX = useTransform(cardY, [0, 300], [0, -35]);
-  const translateY = useTransform(cardY, [0, 300], [0, -5]);
+  const translateY = useTransform(cardY, [0, 300], [0, -1]);
 
   React.useEffect(() => {
     if (selected) {
@@ -41,9 +40,9 @@ const StoryPointCard: React.FC<StoryPointCardProps> = ({
           transformStyle: "preserve-3d",
           perspective: 800,
           rotateX,
-          translateY,
+          translateY
         }}
-        transition={{ velocity: 0 }}
+        transition={{ duration: 0.3 }}
       >
         <motion.button
           className={`
@@ -60,10 +59,9 @@ const StoryPointCard: React.FC<StoryPointCardProps> = ({
           style={{
             transformStyle: "preserve-3d",
             perspective: 800,
-            cardRotateX,
-            borderColor: selected ? 'oklch(48.8% 0.243 264.376)' : undefined,
+            borderColor: selected ? 'oklch(48.8% 0.243 264.376)' : '',
           }}
-          transition={{ velocity: 0 }}
+          transition={{ duration: 3 }}
         >
           <div className="absolute inset-0 flex items-center justify-center">
             <span className="text-2xl font-bold">{value}</span>

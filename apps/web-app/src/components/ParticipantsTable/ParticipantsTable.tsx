@@ -127,9 +127,6 @@ const ParticipantsTable: React.FC<ParticipantsTableProps> = ({
                       borderColor: cardsRevealed ? participant.selectedCard === mostFrequentCard ? 'oklch(0.623 0.214 259.815)' : 'oklch(70.7% 0.022 261.325)' : 'oklch(0.92 0.004 286.32)',
                     }}
                     transition={{ duration: 0.3 }}
-                    onUpdate={(latest: { rotateY: number }) => {
-                      console.log(latest);
-                    }}
                   >
                     {!cardsRevealed ? '⸮' : participant.selectedCard}
                   </motion.div>

@@ -43,10 +43,8 @@ const Room: React.FC = () => {
   const [currentUserId] = useState('user-1'); // TODO: Replace with actual user ID
 
   const handleCardSelect = (value: string) => {
-    if (!cardsRevealed) {
-      setSelectedCard(value);
-      // TODO: Send card selection to WebSocket
-    }
+    setSelectedCard(value);
+    // TODO: Send card selection to WebSocket
   };
 
   const handleShowCards = () => {
