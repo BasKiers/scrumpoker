@@ -279,7 +279,7 @@
         4,
         5
       ],
-      "status": "pending",
+      "status": "in-progress",
       "subtasks": [
         {
           "id": 1,
@@ -287,7 +287,7 @@
           "description": "Develop utility functions to handle user identification persistence using localStorage, including generating and retrieving unique user IDs and storing user names.",
           "dependencies": [],
           "details": "Create a `userStorage.js` utility file with functions: generateUserId() to create a UUID if none exists, getUserId() to retrieve the stored ID, setUserName(name) to store the user's name, and getUserName() to retrieve it. Implement error handling for browser storage limitations. Use a consistent key naming convention like 'chat-app.userId' and 'chat-app.userName'. Add unit tests using Jest to verify storage/retrieval functionality and proper error handling when localStorage is unavailable.",
-          "status": "pending"
+          "status": "done"
         },
         {
           "id": 2,
@@ -322,7 +322,7 @@
       "dependencies": [
         2
       ],
-      "status": "pending",
+      "status": "done",
       "subtasks": [
         {
           "id": 1,
@@ -330,7 +330,7 @@
           "description": "Develop the HomePage component with a hero section, navigation elements, and responsive styling",
           "dependencies": [],
           "details": "Create a React component for the HomePage with: 1) Hero section with app title, tagline, and background image, 2) Navigation bar with logo and links, 3) Responsive layout that works on mobile and desktop, 4) CSS modules or styled-components for styling with a consistent color scheme, 5) Basic animations for element transitions",
-          "status": "pending"
+          "status": "done"
         },
         {
           "id": 2,
@@ -340,7 +340,7 @@
             1
           ],
           "details": "Implement room creation with: 1) Form component with fields for room name and optional settings, 2) Form validation for required fields, 3) Create room button with loading state, 4) API integration to create room in backend, 5) Navigation logic to redirect to the newly created room, 6) Error handling for failed room creation",
-          "status": "pending"
+          "status": "done"
         },
         {
           "id": 3,
@@ -350,7 +350,7 @@
             1
           ],
           "details": "Develop room joining functionality with: 1) Input field for room code/ID, 2) Validation to ensure room code format is correct, 3) Join room button with loading state, 4) API integration to verify room exists, 5) Navigation to the joined room upon success, 6) Error handling for invalid room codes or non-existent rooms, 7) Optional 'recently joined rooms' section",
-          "status": "pending"
+          "status": "done"
         }
       ]
     },

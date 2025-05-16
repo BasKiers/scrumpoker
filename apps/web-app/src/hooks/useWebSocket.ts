@@ -5,7 +5,7 @@ interface UseWebSocketOptions {
 	roomId: string;
 	userId: string;
 	name?: string;
-	onConnect?: () => void;
+	onConnect?: (sendEvent: (event: WebSocketEvent) => void) => void;
 	onDisconnect?: () => void;
 	onMessage?: (data: WebSocketResponse) => void;
 	onError?: (error: string) => void;
@@ -24,7 +24,7 @@ export function useWebSocket({
 	const reconnectTimeout = useRef<number | undefined>(undefined);
 	const connectionRef = useRef<{ roomId: string; userId: string } | null>(null);
 	const callbacksRef = useRef<{
-		onConnect?: () => void;
+		onConnect?: (sendEvent: (event: WebSocketEvent) => void) => void;
 		onDisconnect?: () => void;
 		onMessage?: (data: WebSocketResponse) => void;
 		onError?: (error: string) => void;
@@ -34,6 +34,18 @@ export function useWebSocket({
 	useEffect(() => {
 		callbacksRef.current = { onConnect, onDisconnect, onMessage, onError };
 	}, [onConnect, onDisconnect, onMessage, onError]);
+
+
+	const sendEvent = useCallback(
+		(event: WebSocketEvent) => {
+			if (socketRef.current?.readyState === WebSocket.OPEN) {
+				socketRef.current.send(JSON.stringify(event));
+			} else {
+				callbacksRef.current.onError?.('WebSocket is not connected');
+			}
+		},
+		[],
+	);
 
 	const connect = useCallback(() => {
 		// Don't create a new connection if we already have one for this room/user
@@ -47,6 +59,10 @@ export function useWebSocket({
 			socketRef.current = null;
 		}
 
+        if(!roomId || !userId){
+            return;
+        }
+
 		const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
 		const wsUrl = `${protocol}//localhost:8787/room/${roomId}/websocket?userId=${userId}`;
 
@@ -56,14 +72,12 @@ export function useWebSocket({
 			connectionRef.current = { roomId, userId };
 
 			socket.onopen = () => {
-
-                console.log('OPEN!')
 				if (socketRef.current !== socket) {
 					return;
                 }
                 
 				reconnectAttempts.current = 0;
-				callbacksRef.current.onConnect?.();
+				callbacksRef.current.onConnect?.(sendEvent);
 			};
 
 			socket.onclose = () => {
@@ -124,17 +138,6 @@ export function useWebSocket({
 		cleanup();
 		connect();
 	}, [connect, cleanup]);
-
-	const sendEvent = useCallback(
-		(event: WebSocketEvent) => {
-			if (socketRef.current?.readyState === WebSocket.OPEN) {
-				socketRef.current.send(JSON.stringify(event));
-			} else {
-				callbacksRef.current.onError?.('WebSocket is not connected');
-			}
-		},
-		[],
-	);
 
 	return { sendEvent };
 } 

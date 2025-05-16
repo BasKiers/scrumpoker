@@ -1,4 +1,4 @@
-import { useCallback } from 'react';
+import { useCallback, useEffect } from 'react';
 import { useWebSocket } from './useWebSocket';
 import { useRoomStore } from '../store/roomStore';
 import type { WebSocketResponse, RoomState } from 'shared-types';
@@ -15,13 +15,12 @@ interface UseRoomActionsOptions {
   name?: string;
 }
 
-export function useRoomActions({ roomId, userId, name }: UseRoomActionsOptions) {
-  const { setConnected, setError, updateRoomState, card_status: cardStatus, toggleCardStatus, resetRoom } = useRoomStore();
-
+export function useRoomActions({ roomId, userId, name = 'foobar' }: UseRoomActionsOptions) {
+  const { setConnected, setError, updateRoomState, card_status: cardStatus, isConnected, toggleCardStatus, resetRoom } = useRoomStore();
+  
   const { sendEvent } = useWebSocket({
     roomId,
     userId,
-    name,
     onConnect: () => setConnected(true),
     onDisconnect: () => setConnected(false),
     onMessage: (data: WebSocketResponse) => {
@@ -41,6 +40,17 @@ export function useRoomActions({ roomId, userId, name }: UseRoomActionsOptions) 
     },
     onError: (error: string) => setError(error),
   });
+
+  useEffect(() => {
+      if(isConnected && name){
+          sendEvent({
+              type: 'set_name',
+              userId,
+              name,
+          })
+      }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  },[name, sendEvent, isConnected])
 
   const selectCard = useCallback(
     (cardValue: string) => {
