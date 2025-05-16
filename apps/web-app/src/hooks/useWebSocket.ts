@@ -1,73 +1,101 @@
-import { useState, useEffect, useCallback, useRef } from 'react';
-import type { WebSocketEvent } from 'shared-types';
+import { useState, useEffect, useCallback } from 'react';
+import type {
+	RoomState,
+	WebSocketEvent,
+	WebSocketResponse,
+} from 'shared-types';
+import {
+	isErrorResponse,
+	isStateUpdateResponse,
+} from 'shared-types';
 
 interface UseWebSocketOptions {
 	roomId: string;
 	userId: string;
-	onMessage: (message: WebSocketEvent) => void;
+	name?: string;
+	onError?: (error: string) => void;
 }
 
-interface UseWebSocketResult {
-	isConnected: boolean;
-	sendMessage: (message: WebSocketEvent) => void;
-}
-
-export function useWebSocket({ roomId, userId, onMessage }: UseWebSocketOptions): UseWebSocketResult {
-	const [isConnected, setIsConnected] = useState(false);
-	const wsRef = useRef<WebSocket | null>(null);
+export function useWebSocket({ roomId, userId, name, onError }: UseWebSocketOptions) {
+	const [socket, setSocket] = useState<WebSocket | null>(null);
+	const [connected, setConnected] = useState(false);
+	const [roomState, setRoomState] = useState<RoomState>({
+		roomId,
+		participants: {},
+		card_status: 'hidden',
+	});
 
 	const connect = useCallback(() => {
 		const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-		const wsUrl = `${protocol}//${window.location.host}/${roomId}/websocket?userId=${encodeURIComponent(userId)}`;
-		const ws = new WebSocket(wsUrl);
+		const host = window.location.host;
+		const url = `${protocol}//${host}/room/${roomId}/websocket?userId=${userId}`;
 
-		ws.onopen = () => {
-			setIsConnected(true);
-		};
+		const ws = new WebSocket(url);
 
-		ws.onmessage = (event) => {
-			try {
-				const data = JSON.parse(event.data);
-				onMessage(data);
-			} catch (err) {
-				console.error('Error parsing WebSocket message:', err);
+		ws.addEventListener('open', () => {
+			setConnected(true);
+			setSocket(ws);
+
+			// Send initial connect event
+			if (name) {
+				ws.send(
+					JSON.stringify({
+						type: 'connect',
+						userId,
+						name,
+					} as WebSocketEvent),
+				);
 			}
-		};
+		});
 
-		ws.onclose = () => {
-			setIsConnected(false);
-			wsRef.current = null;
-		};
+		ws.addEventListener('message', (event) => {
+			try {
+				const data = JSON.parse(event.data) as WebSocketResponse;
 
-		ws.onerror = (error) => {
-			console.error('WebSocket error:', error);
-			setIsConnected(false);
-		};
+				if (isStateUpdateResponse(data)) {
+					setRoomState(data.state);
+				} else if (isErrorResponse(data)) {
+					onError?.(data.error);
+				}
+			} catch (error) {
+				onError?.(error instanceof Error ? error.message : 'Failed to parse WebSocket message');
+			}
+		});
 
-		wsRef.current = ws;
-	}, [roomId, userId, onMessage]);
+		ws.addEventListener('close', () => {
+			setConnected(false);
+			setSocket(null);
+			// Attempt to reconnect after a delay
+			setTimeout(connect, 2000);
+		});
+
+		ws.addEventListener('error', () => {
+			ws.close();
+		});
+
+		return ws;
+	}, [roomId, userId, name, onError]);
 
 	useEffect(() => {
-		connect();
+		const ws = connect();
 
 		return () => {
-			if (wsRef.current) {
-				wsRef.current.close();
-			}
+			ws.close();
 		};
 	}, [connect]);
 
-	const sendMessage = useCallback(
-		(message: WebSocketEvent) => {
-			if (wsRef.current && isConnected) {
-				wsRef.current.send(JSON.stringify(message));
+	const sendEvent = useCallback(
+		(event: WebSocketEvent) => {
+			if (socket && connected) {
+				socket.send(JSON.stringify(event));
 			}
 		},
-		[isConnected]
+		[socket, connected],
 	);
 
 	return {
-		isConnected,
-		sendMessage,
+		connected,
+		roomState,
+		sendEvent,
 	};
 } 
