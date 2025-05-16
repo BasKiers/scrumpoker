@@ -126,6 +126,7 @@ const ParticipantsTable: React.FC<ParticipantsTableProps> = ({
                     animate={{
                       rotateY: cardsRevealed ? 0 : 180,
                       borderColor: cardsRevealed ? participant.selectedCard === mostFrequentCard ? 'oklch(0.623 0.214 259.815)' : 'oklch(70.7% 0.022 261.325)' : 'oklch(0.92 0.004 286.32)',
+                      backgroundColor: cardsRevealed ? '#FFFFFF' : ''
                     }}
                     transition={{ duration: 0.3 }}
                   >

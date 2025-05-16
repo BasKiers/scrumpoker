@@ -279,7 +279,7 @@
         4,
         5
       ],
-      "status": "in-progress",
+      "status": "done",
       "subtasks": [
         {
           "id": 1,
@@ -297,7 +297,7 @@
             1
           ],
           "details": "Build a React NameModal component with a form input for the user's name. Implement validation to ensure names are between 2-20 characters and contain no special characters. Use React state to manage form data and validation errors. Style the modal to appear centered with a backdrop overlay. Include a submit button that is disabled until validation passes. Write unit tests with React Testing Library to verify validation logic, form submission behavior, and proper rendering of error messages. Ensure the modal is accessible with proper aria attributes and keyboard navigation.",
-          "status": "pending"
+          "status": "done"
         },
         {
           "id": 3,
@@ -308,7 +308,7 @@
             2
           ],
           "details": "Modify the room page component to check for existing user identification on load. If no name exists, display the NameModal. Update the WebSocket connection logic to include user ID and name in the connection and message payloads. Implement a context provider (UserContext) to make user information available throughout the application. Add logic to persist the user's name when set through the modal. Create integration tests to verify the complete flow: checking for existing user, displaying modal if needed, setting name, and establishing WebSocket connection with user details.",
-          "status": "pending"
+          "status": "done"
         }
       ]
     },
@@ -365,7 +365,7 @@
         3,
         5
       ],
-      "status": "pending",
+      "status": "done",
       "subtasks": [
         {
           "id": 1,
@@ -373,7 +373,7 @@
           "description": "Create the backend logic to handle the toggle_cards event in the DurableObject, allowing participants to manually reveal or hide cards.",
           "dependencies": [],
           "details": "1. Add a new event handler for 'toggle_cards' in the DurableObject class\n2. Implement logic to update the state.cardsRevealed flag\n3. Add validation to ensure only the session owner can toggle cards\n4. Broadcast the updated state to all connected clients\n5. Add error handling for invalid requests\n6. Implement rate limiting to prevent abuse\n7. Add logging for debugging purposes\n8. Test with both valid and invalid requests\n9. Verify state persistence across connections",
-          "status": "pending"
+          "status": "done"
         },
         {
           "id": 2,
@@ -383,7 +383,7 @@
             1
           ],
           "details": "1. Create a helper function to check if all active participants have selected cards\n2. Modify the 'select_card' event handler to call this check after card selection\n3. If all participants have selected, automatically set state.cardsRevealed to true\n4. Add a configurable delay before auto-revealing (optional feature)\n5. Ensure the auto-reveal doesn't conflict with manual toggles\n6. Handle edge cases like participants joining/leaving during voting\n7. Add a configuration option to enable/disable auto-reveal\n8. Test with various participant counts and timing scenarios\n9. Verify the behavior when participants change their votes",
-          "status": "pending"
+          "status": "done"
         },
         {
           "id": 3,
@@ -394,7 +394,7 @@
             2
           ],
           "details": "1. Add a reveal/hide cards button for the session owner\n2. Implement card flip animations when cards are revealed/hidden\n3. Update the card component to show either the back or the selected value\n4. Add visual indicators when cards are about to be revealed automatically\n5. Ensure accessibility of the card reveal UI elements\n6. Handle WebSocket events for card reveal state changes\n7. Add loading states during reveal/hide operations\n8. Test across different browsers and devices\n9. Implement error handling for failed reveal/hide operations\n10. Add unit and integration tests for the card reveal components",
-          "status": "pending"
+          "status": "done"
         }
       ]
     },
@@ -409,7 +409,7 @@
         3,
         5
       ],
-      "status": "pending",
+      "status": "in-progress",
       "subtasks": [
         {
           "id": 1,
@@ -425,7 +425,7 @@
           "description": "Create backend functionality to reset a room's state in the DurableObject",
           "dependencies": [],
           "details": "1. Add a new method to the DurableObject class called 'resetRoom'.\n2. Implement logic to reset all room state variables to their initial values.\n3. Create a new WebSocket message type for reset requests.\n4. Add authentication/authorization checks to ensure only authorized users can reset a room.\n5. Broadcast a notification to all connected clients when a room is reset.\n6. Implement error handling for failed reset attempts.\n7. Write unit tests to verify the reset functionality works correctly and maintains data integrity.",
-          "status": "pending"
+          "status": "done"
         },
         {
           "id": 3,
