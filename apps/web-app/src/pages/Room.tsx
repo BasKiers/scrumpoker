@@ -6,19 +6,19 @@ import { useRoomActions } from '../hooks/useRoomActions';
 import { useRoomStore } from '../store/roomStore';
 import { Button } from '../components/ui/button';
 import { Alert, AlertDescription } from '../components/ui/alert';
-import { getUserId, getLastKnownName, setLastKnownName, clearLastKnownName } from '@/utils/localStorage';
+import { useUser } from '@/contexts/UserContext';
 import NameModal from '../components/NameModal';
 
 const STORY_POINTS = ['?', '1', '2', '3', '5', '8', '13', '20'];
 
 const Room: React.FC = () => {
   const { roomId } = useParams<{ roomId: string }>();
-  const [currentUserId] = React.useState(getUserId());
+  const { userId, name, setName, clearName } = useUser();
   const [showNameModal, setShowNameModal] = React.useState<'joining' | 'done' | 're-enter'>('done');
 
-  const { selectCard, toggleCards, reset, setName } = useRoomActions({
+  const { selectCard, toggleCards, reset, setName: setRoomName } = useRoomActions({
     roomId: roomId || 'default',
-    userId: currentUserId,
+    userId,
   });
 
   const { participants, card_status, error, isSynced } = useRoomStore();
@@ -27,11 +27,10 @@ const Room: React.FC = () => {
   // Check if user needs to set their name after state sync
   React.useEffect(() => {
     if(!isSynced) return;
-    const currentParticipant = participants[currentUserId];
+    const currentParticipant = participants[userId];
     if (currentParticipant?.name === undefined) {
-      const lastKnownName = getLastKnownName();
-      if (typeof lastKnownName === 'string') {
-        setName(lastKnownName);
+      if (name) {
+        setRoomName(name);
         setShowNameModal('done');
       } else {
         setShowNameModal('joining');
@@ -39,7 +38,7 @@ const Room: React.FC = () => {
     } else if(showNameModal === 'joining') {
       setShowNameModal('done');
     }
-  }, [currentUserId, isSynced, participants, showNameModal, setName]);
+  }, [userId, isSynced, participants, showNameModal, name, setRoomName]);
 
   const handleCardSelect = (value: string) => {
     selectCard(value);
@@ -53,19 +52,20 @@ const Room: React.FC = () => {
     reset();
   };
 
-  const handleNameSubmit = (name: string) => {
-    setName(name);
-    setLastKnownName(name);
+  const handleNameSubmit = (newName: string) => {
+    setName(newName);
+    setRoomName(newName);
     setShowNameModal('done');
   };
 
   const handleNameSkip = () => {
-    setName('');
-    clearLastKnownName();
+    clearName();
+    setRoomName('');
     setShowNameModal('done');
   };
 
-  const hasName = Boolean(participants[currentUserId]?.name);
+  const hasName = Boolean(participants[userId]?.name);
+
   return (
     <div className="room-page min-h-screen bg-gray-50">
       <header className="bg-white shadow">
@@ -89,7 +89,7 @@ const Room: React.FC = () => {
                 <ParticipantsTable
                   participants={activeParticipants}
                   cardsRevealed={card_status === 'revealed'}
-                  currentUserId={currentUserId}
+                  currentUserId={userId}
                 />
               </div>
             </section>
@@ -111,7 +111,7 @@ const Room: React.FC = () => {
                     <StoryPointCard
                       key={value}
                       value={value}
-                      selected={activeParticipants[currentUserId]?.selectedCard === value}
+                      selected={activeParticipants[userId]?.selectedCard === value}
                       onClick={() => handleCardSelect(value)}
                       disabled={!hasName}
                     />
