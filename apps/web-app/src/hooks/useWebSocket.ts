@@ -1,7 +1,5 @@
 import { useEffect, useCallback, useRef } from 'react';
 import type { WebSocketEvent, WebSocketResponse } from 'shared-types';
-import { isErrorResponse, isStateUpdateResponse } from 'shared-types';
-import { useRoomStore } from '../store/roomStore';
 
 interface UseWebSocketOptions {
 	roomId: string;
@@ -9,6 +7,10 @@ interface UseWebSocketOptions {
 	name?: string;
 	maxReconnectAttempts?: number;
 	reconnectInterval?: number;
+	onConnect?: () => void;
+	onDisconnect?: () => void;
+	onMessage?: (data: WebSocketResponse) => void;
+	onError?: (error: string) => void;
 }
 
 export function useWebSocket({
@@ -17,13 +19,11 @@ export function useWebSocket({
 	name,
 	maxReconnectAttempts = 5,
 	reconnectInterval = 2000,
+	onConnect,
+	onDisconnect,
+	onMessage,
+	onError,
 }: UseWebSocketOptions) {
-	const {
-		setConnected,
-		setError,
-		updateRoomState,
-	} = useRoomStore();
-
 	const reconnectAttempts = useRef<number>(0);
 	const reconnectTimeout = useRef<number | undefined>(undefined);
 	const socketRef = useRef<WebSocket | null>(null);
@@ -37,8 +37,8 @@ export function useWebSocket({
 		socketRef.current = ws;
 
 		ws.addEventListener('open', () => {
-			setConnected(true);
 			reconnectAttempts.current = 0;
+			onConnect?.();
 
 			// Send initial connect event
 			if (name) {
@@ -55,20 +55,14 @@ export function useWebSocket({
 		ws.addEventListener('message', (event) => {
 			try {
 				const data = JSON.parse(event.data) as WebSocketResponse;
-
-				if (isStateUpdateResponse(data)) {
-					updateRoomState(data.state);
-				} else if (isErrorResponse(data)) {
-					setError(data.error);
-				}
+				onMessage?.(data);
 			} catch (error) {
-				setError(error instanceof Error ? error.message : 'Failed to parse WebSocket message');
+				onError?.(error instanceof Error ? error.message : 'Failed to parse WebSocket message');
 			}
 		});
 
 		ws.addEventListener('close', (event) => {
-			setConnected(false);
-			socketRef.current = null;
+			onDisconnect?.();
 
 			// Only attempt to reconnect if the connection was closed unexpectedly
 			// and we haven't exceeded the maximum number of attempts
@@ -77,17 +71,17 @@ export function useWebSocket({
 				const delay = reconnectInterval * Math.pow(2, reconnectAttempts.current - 1); // Exponential backoff
 				reconnectTimeout.current = window.setTimeout(connect, delay);
 			} else if (reconnectAttempts.current >= maxReconnectAttempts) {
-				setError('Maximum reconnection attempts reached. Please refresh the page.');
+				onError?.('Maximum reconnection attempts reached. Please refresh the page.');
 			}
 		});
 
 		ws.addEventListener('error', () => {
-			setError('WebSocket connection error. Attempting to reconnect...');
+			onError?.('WebSocket connection error. Attempting to reconnect...');
 			ws.close();
 		});
 
 		return ws;
-	}, [roomId, userId, name, maxReconnectAttempts, reconnectInterval, setConnected, setError, updateRoomState]);
+	}, [roomId, userId, name, maxReconnectAttempts, reconnectInterval, onConnect, onDisconnect, onMessage, onError]);
 
 	useEffect(() => {
 		const ws = connect();
@@ -106,13 +100,13 @@ export function useWebSocket({
 				try {
 					socketRef.current.send(JSON.stringify(event));
 				} catch (error) {
-					setError(error instanceof Error ? error.message : 'Failed to send WebSocket message');
+					onError?.(error instanceof Error ? error.message : 'Failed to send WebSocket message');
 				}
 			} else {
-				setError('Cannot send message: WebSocket is not connected');
+				onError?.('Cannot send message: WebSocket is not connected');
 			}
 		},
-		[setError],
+		[onError],
 	);
 
 	return {

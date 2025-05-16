@@ -166,7 +166,7 @@
         1,
         2
       ],
-      "status": "in-progress",
+      "status": "done",
       "subtasks": [
         {
           "id": 1,
@@ -206,7 +206,7 @@
             3
           ],
           "details": "Implement room control functionality including: 1) Start/End voting session buttons, 2) Reveal votes button, 3) Reset/Clear votes button, 4) Copy room link button. Connect all components with React Context or Redux for shared state management. Handle state transitions between waiting, voting, and results phases. Implement event handlers for all buttons and ensure proper state updates across all components. Add confirmation dialogs for destructive actions like ending sessions or clearing votes.",
-          "status": "pending"
+          "status": "done"
         }
       ]
     },
@@ -223,7 +223,7 @@
         3,
         4
       ],
-      "status": "pending",
+      "status": "done",
       "subtasks": [
         {
           "id": 1,
@@ -231,7 +231,7 @@
           "description": "Develop a React custom hook that establishes and manages a WebSocket connection to the backend server.",
           "dependencies": [],
           "details": "Implementation steps:\n1. Create a useWebSocket.js file in the hooks directory\n2. Implement connection initialization with configurable endpoint URL\n3. Add connection state tracking (connected, connecting, closed)\n4. Handle basic lifecycle events (onopen, onclose)\n5. Create cleanup function to properly close connection on component unmount\n\nTesting approaches:\n1. Unit test the hook with React Testing Library and mock WebSocket\n2. Test connection establishment and cleanup\n3. Verify state changes on connection events\n\nEdge cases:\n1. Handle invalid WebSocket URLs\n2. Manage connection timeout scenarios\n3. Consider browser compatibility issues",
-          "status": "pending"
+          "status": "done"
         },
         {
           "id": 2,
@@ -241,7 +241,7 @@
             1
           ],
           "details": "Implementation steps:\n1. Create message parsing logic in the WebSocket hook\n2. Implement message type identification and routing\n3. Add state management for different message types\n4. Create callback system for components to subscribe to specific message types\n5. Implement message queue for handling messages during reconnection\n\nTesting approaches:\n1. Test message parsing with various message formats\n2. Verify state updates occur correctly for each message type\n3. Test callback execution with mock functions\n\nEdge cases:\n1. Handle malformed message data\n2. Manage high-frequency message reception\n3. Handle unexpected message types\n4. Consider race conditions in state updates",
-          "status": "pending"
+          "status": "done"
         },
         {
           "id": 3,
@@ -252,7 +252,7 @@
             2
           ],
           "details": "Implementation steps:\n1. Create send function in the WebSocket hook\n2. Implement message formatting and serialization\n3. Add message type helpers for common operations\n4. Implement queue for messages sent during disconnected state\n5. Add acknowledgment tracking for critical messages\n\nTesting approaches:\n1. Test send function with various payload types\n2. Verify message queuing during disconnection\n3. Test retry logic for failed sends\n\nEdge cases:\n1. Handle send attempts when disconnected\n2. Manage message size limitations\n3. Implement timeout handling for unacknowledged messages\n4. Consider rate limiting to prevent flooding",
-          "status": "pending"
+          "status": "done"
         },
         {
           "id": 4,
@@ -264,7 +264,7 @@
             3
           ],
           "details": "Implementation steps:\n1. Implement exponential backoff for reconnection attempts\n2. Add configurable reconnection parameters (max attempts, delay)\n3. Create connection health monitoring\n4. Implement heartbeat mechanism to detect zombie connections\n5. Add comprehensive error classification and handling\n\nTesting approaches:\n1. Test reconnection under various failure scenarios\n2. Verify backoff timing and attempt limits\n3. Test heartbeat mechanism with simulated network issues\n4. Verify error handling and user notifications\n\nEdge cases:\n1. Handle browser sleep/resume scenarios\n2. Manage reconnection during network changes\n3. Handle server-initiated disconnects vs. network failures\n4. Implement graceful degradation when WebSockets are unavailable",
-          "status": "pending"
+          "status": "done"
         }
       ]
     },
