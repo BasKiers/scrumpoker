@@ -7,19 +7,34 @@ import { useRoomStore } from '../store/roomStore';
 import { Button } from '../components/ui/button';
 import { Alert, AlertDescription } from '../components/ui/alert';
 import { getUserId } from '@/utils/localStorage';
+import NameModal from '../components/NameModal';
 
 const STORY_POINTS = ['?', '1', '2', '3', '5', '8', '13', '20'];
 
 const Room: React.FC = () => {
   const { roomId } = useParams<{ roomId: string }>();
   const [currentUserId] = React.useState(getUserId());
+  const [showNameModal, setShowNameModal] = React.useState(false);
 
-  const { selectCard, toggleCards, reset } = useRoomActions({
+  const { selectCard, toggleCards, reset, setName } = useRoomActions({
     roomId: roomId || 'default',
     userId: currentUserId,
   });
 
-  const { participants, card_status, error } = useRoomStore();
+  const { participants, card_status, error, isSynced } = useRoomStore();
+
+  // Check if user needs to set their name after state sync
+  React.useEffect(() => {
+    console.log(isSynced, currentUserId, participants, showNameModal)
+    if(!isSynced) return;
+    const currentParticipant = participants[currentUserId];
+    console.log('checking', currentParticipant, currentParticipant?.name)
+    if (currentParticipant?.name === undefined) {
+        setShowNameModal(true);
+    } else if(showNameModal) {
+        setShowNameModal(false);
+    }
+  }, [currentUserId, isSynced, participants, showNameModal]);
 
   const handleCardSelect = (value: string) => {
     selectCard(value);
@@ -31,6 +46,16 @@ const Room: React.FC = () => {
 
   const handleReset = () => {
     reset();
+  };
+
+  const handleNameSubmit = (name: string) => {
+    setName(name);
+    setShowNameModal(false);
+  };
+
+  const handleNameSkip = () => {
+    setName('');
+    setShowNameModal(false);
   };
 
   return (
@@ -95,6 +120,13 @@ const Room: React.FC = () => {
           </div>
         </div>
       </main>
+
+      <NameModal
+        isOpen={showNameModal}
+        onSubmit={handleNameSubmit}
+        onSkip={handleNameSkip}
+        roomUrl={window.location.href}
+      />
     </div>
   );
 };
