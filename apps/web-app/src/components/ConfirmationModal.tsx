@@ -1,6 +1,12 @@
 import React from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import '../styles/modal.css';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from './ui/dialog';
+import { Button } from './ui/button';
 
 interface ConfirmationModalProps {
   isOpen: boolean;
@@ -16,47 +22,30 @@ export const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
   onCancel,
 }) => {
   return (
-    <AnimatePresence mode="wait">
-      {isOpen && (
-        <motion.div
-          className="modal-overlay"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          transition={{ duration: 0.2 }}
-          onClick={onCancel}
-        >
-          <motion.div
-            className="modal confirmation-modal"
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: 20 }}
-            transition={{ duration: 0.3, type: "spring", damping: 25, stiffness: 300 }}
-            onClick={e => e.stopPropagation()}
+    <Dialog open={isOpen} onOpenChange={(open) => {if(!open) {onCancel()}}}>
+      <DialogContent className="sm:max-w-[425px]">
+        <DialogHeader>
+          <DialogTitle>Confirm Action</DialogTitle>
+          <DialogDescription>
+            {message}
+          </DialogDescription>
+        </DialogHeader>
+
+        <div className="flex justify-end gap-2 mt-4">
+          <Button
+            variant="outline"
+            onClick={onCancel}
           >
-            <motion.p
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.1 }}
-            >
-              {message}
-            </motion.p>
-            <motion.div
-              className="modal-actions"
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.2 }}
-            >
-              <button onClick={onConfirm} className="btn btn-primary">
-                Yes, Reset
-              </button>
-              <button onClick={onCancel} className="btn btn-secondary">
-                Cancel
-              </button>
-            </motion.div>
-          </motion.div>
-        </motion.div>
-      )}
-    </AnimatePresence>
+            Cancel
+          </Button>
+          <Button
+            variant="warning"
+            onClick={onConfirm}
+          >
+            Confirm
+          </Button>
+        </div>
+      </DialogContent>
+    </Dialog>
   );
 }; 
