@@ -1,14 +1,43 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { nanoid } from 'nanoid';
+import { humanId } from 'human-id';
 
 const Home: React.FC = () => {
   const navigate = useNavigate();
+  const [joinRoomId, setJoinRoomId] = useState('');
+  const [error, setError] = useState('');
 
   const createRoom = () => {
-    const roomId = nanoid(10); // Generate a 10-character unique room ID
+    const roomId = humanId({ 
+      separator: '-',
+      capitalize: false,
+      adjectiveCount: 1,
+      addAdverb: true
+    });
     navigate(`/room/${roomId}`);
+  };
+
+  const handleJoinRoom = (e: React.FormEvent) => {
+    e.preventDefault();
+    setError('');
+
+    const trimmedRoomId = joinRoomId.trim();
+    if (!trimmedRoomId) {
+      setError('Please enter a room ID');
+      return;
+    }
+
+    const roomIdWithoutWhitespace = trimmedRoomId.replace(/\s+/g, '-');
+
+    // Validate that the room ID contains only URL-safe characters
+    const urlSafePattern = /^[a-zA-Z0-9\-_~.]+$/;
+    if (!urlSafePattern.test(roomIdWithoutWhitespace)) {
+      setError('Room ID can only contain letters, numbers, and the following characters: - _ ~ .');
+      return;
+    }
+
+    navigate(`/room/${roomIdWithoutWhitespace}`);
   };
 
   return (
@@ -21,13 +50,46 @@ const Home: React.FC = () => {
           <p className="max-w-[700px] text-muted-foreground text-lg sm:text-xl">
             Create a room to start estimating story points with your team. Simple, fast, and effective.
           </p>
-          <Button 
-            size="lg" 
-            onClick={createRoom}
-            className="text-lg px-8 py-6"
-          >
-            Create Room
-          </Button>
+          <div className="flex flex-col items-center space-y-4 w-full max-w-md">
+            <Button 
+              size="lg" 
+              onClick={createRoom}
+              className="text-lg px-8 py-6 w-full"
+            >
+              Create Room
+            </Button>
+            <div className="relative w-full">
+              <div className="absolute inset-0 flex items-center">
+                <span className="w-full border-t" />
+              </div>
+              <div className="relative flex justify-center text-xs uppercase">
+                <span className="bg-background px-2 text-muted-foreground">
+                  Or join an existing room
+                </span>
+              </div>
+            </div>
+            <form onSubmit={handleJoinRoom} className="w-full space-y-4">
+              <div className="flex flex-col space-y-2">
+                <input
+                  type="text"
+                  value={joinRoomId}
+                  onChange={(e) => setJoinRoomId(e.target.value)}
+                  placeholder="Enter room ID"
+                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                />
+                {error && (
+                  <p className="text-sm text-destructive">{error}</p>
+                )}
+              </div>
+              <Button 
+                type="submit"
+                className="w-full"
+                disabled={!joinRoomId.trim()}
+              >
+                Join Room
+              </Button>
+            </form>
+          </div>
         </section>
 
         <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 py-16">

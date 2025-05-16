@@ -4,9 +4,9 @@ import { BrowserRouter } from 'react-router-dom';
 import { useNavigate } from 'react-router-dom';
 import Home from './Home';
 
-// Mock nanoid to return a predictable value
-jest.mock('nanoid', () => ({
-  nanoid: () => 'test-room-id'
+// Mock human-id to return a predictable value
+jest.mock('human-id', () => ({
+  humanId: () => 'happy-cats-jump-quickly'
 }));
 
 // Mock useNavigate
@@ -51,7 +51,35 @@ describe('Home', () => {
     renderHome();
     
     fireEvent.click(screen.getByRole('button', { name: /create room/i }));
-    expect(mockNavigate).toHaveBeenCalledWith('/room/test-room-id');
+    expect(mockNavigate).toHaveBeenCalledWith('/room/happy-cats-jump-quickly');
+  });
+
+  it('validates room ID format when joining', () => {
+    renderHome();
+    
+    const input = screen.getByPlaceholderText('Enter room ID');
+    const joinButton = screen.getByRole('button', { name: /join room/i });
+
+    // Test invalid characters
+    fireEvent.change(input, { target: { value: 'invalid@format' } });
+    fireEvent.click(joinButton);
+    expect(screen.getByText('Room ID can only contain letters, numbers, and the following characters: - _ ~ .')).toBeInTheDocument();
+
+    // Test valid URL-safe characters
+    const validIds = [
+      'happy-cats-jump-quickly',
+      'room123',
+      'my.room',
+      'room~name',
+      'room_name'
+    ];
+
+    validIds.forEach(validId => {
+      fireEvent.change(input, { target: { value: validId } });
+      fireEvent.click(joinButton);
+      expect(mockNavigate).toHaveBeenCalledWith(`/room/${validId}`);
+      mockNavigate.mockClear();
+    });
   });
 
   it('renders feature sections', () => {
