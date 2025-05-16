@@ -1,13 +1,14 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
+import { nanoid } from 'nanoid';
 
 const Home: React.FC = () => {
   const navigate = useNavigate();
 
   const createRoom = () => {
-    // TODO: Implement room creation with nanoid
-    navigate('/room/new');
+    const roomId = nanoid(10); // Generate a 10-character unique room ID
+    navigate(`/room/${roomId}`);
   };
 
   return (
