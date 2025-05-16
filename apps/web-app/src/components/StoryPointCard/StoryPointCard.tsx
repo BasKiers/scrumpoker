@@ -1,5 +1,6 @@
 import React from 'react';
 import { motion, useMotionValue, useTransform } from 'framer-motion';
+import '../../styles/responsive.css';
 
 interface StoryPointCardProps {
   value: string;
@@ -46,7 +47,7 @@ const StoryPointCard: React.FC<StoryPointCardProps> = ({
       >
         <motion.button
           className={`
-              relative w-20 h-32 rounded-lg shadow-md
+              relative story-point-card rounded-lg shadow-md
               ${selected 
               ? 'bg-blue-50 text-gray-800 border-blue-400' 
               : 'bg-white text-gray-800 hover:bg-gray-50 border-gray-200'
@@ -64,7 +65,7 @@ const StoryPointCard: React.FC<StoryPointCardProps> = ({
           transition={{ duration: 3 }}
         >
           <div className="absolute inset-0 flex items-center justify-center">
-            <span className="text-2xl font-bold">{value}</span>
+            <span className="font-bold">{value}</span>
           </div>
         </motion.button>
       </motion.div>

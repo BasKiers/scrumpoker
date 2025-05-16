@@ -1,0 +1,157 @@
+/* Base styles */
+:root {
+  --card-width: 5rem;
+  --card-height: 8rem;
+  --card-gap: 1rem;
+  --header-height: 4rem;
+  --content-padding: 1rem;
+}
+
+/* Fluid typography */
+.room-page h1 {
+  font-size: clamp(1.5rem, 5vw, 2rem);
+}
+
+.room-page h2 {
+  font-size: clamp(1.125rem, 4vw, 1.5rem);
+}
+
+/* Mobile-first layout */
+@media (max-width: 640px) {
+  .room-page {
+    --card-width: 4rem;
+    --card-height: 6rem;
+    --card-gap: 0.5rem;
+    --content-padding: 0.75rem;
+  }
+
+  .room-page header {
+    padding: var(--content-padding);
+  }
+
+  .room-page main {
+    padding: var(--content-padding);
+  }
+
+  .story-point-cards {
+    gap: var(--card-gap);
+  }
+
+  .story-point-card {
+    width: var(--card-width);
+    height: var(--card-height);
+  }
+
+  .story-point-card span {
+    font-size: 1.25rem;
+  }
+
+  .participants-table {
+    font-size: 0.875rem;
+  }
+
+  .participants-table th,
+  .participants-table td {
+    padding: 0.5rem;
+  }
+
+  .participants-table .card {
+    width: 2rem;
+    height: 3rem;
+    font-size: 0.875rem;
+  }
+
+  .room-controls {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .room-controls button {
+    width: 100%;
+  }
+}
+
+/* Tablet layout */
+@media (min-width: 641px) and (max-width: 1024px) {
+  .room-page {
+    --card-width: 4.5rem;
+    --card-height: 7rem;
+    --card-gap: 0.75rem;
+  }
+
+  .story-point-cards {
+    gap: var(--card-gap);
+  }
+
+  .story-point-card {
+    width: var(--card-width);
+    height: var(--card-height);
+  }
+
+  .participants-table .card {
+    width: 2.5rem;
+    height: 3.5rem;
+  }
+}
+
+/* Desktop layout */
+@media (min-width: 1025px) {
+  .story-point-cards {
+    gap: var(--card-gap);
+  }
+
+  .story-point-card {
+    width: var(--card-width);
+    height: var(--card-height);
+  }
+
+  .participants-table .card {
+    width: 3rem;
+    height: 4rem;
+  }
+}
+
+/* Touch-friendly adjustments */
+@media (hover: none) {
+  .story-point-card:hover {
+    transform: none;
+  }
+
+  .story-point-card:active {
+    transform: scale(0.98);
+  }
+
+  .room-controls button {
+    min-height: 2.75rem;
+  }
+}
+
+/* Dark mode adjustments */
+@media (prefers-color-scheme: dark) {
+  .room-page {
+    background-color: #1a1a1a;
+  }
+
+  .room-page header {
+    background-color: #2a2a2a;
+  }
+
+  .room-page h1,
+  .room-page h2 {
+    color: #ffffff;
+  }
+
+  .story-point-card {
+    background-color: #2a2a2a;
+    color: #ffffff;
+  }
+
+  .story-point-card:hover {
+    background-color: #3a3a3a;
+  }
+
+  .story-point-card.selected {
+    background-color: #1e3a8a;
+    color: #ffffff;
+  }
+} 

@@ -9,6 +9,7 @@ import { Alert, AlertDescription } from '../components/ui/alert';
 import { useUser } from '@/contexts/UserContext';
 import NameModal from '../components/NameModal';
 import { ConfirmationModal } from '../components/ConfirmationModal';
+import '../styles/responsive.css';
 
 const STORY_POINTS = ['?', '1', '2', '3', '5', '8', '13', '20'];
 
@@ -122,7 +123,7 @@ const Room: React.FC = () => {
                     {hasName ? 'Spectate Voting' : 'Join Voting'}
                   </Button>
                 </div>
-                <div className="flex flex-wrap gap-4 justify-center">
+                <div className="flex flex-wrap gap-4 justify-center story-point-cards">
                   {STORY_POINTS.map((value) => (
                     <StoryPointCard
                       key={value}
@@ -133,7 +134,7 @@ const Room: React.FC = () => {
                     />
                   ))}
                 </div>
-                <div className="mt-6 flex justify-center gap-4">
+                <div className="mt-6 flex justify-center gap-4 room-controls">
                   <Button
                     variant="primary"
                     onClick={handleShowCards}
