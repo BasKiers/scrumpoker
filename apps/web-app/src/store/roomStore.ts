@@ -1,14 +1,16 @@
 import { create } from 'zustand';
-import type { RoomState as SharedRoomState, Participant } from 'shared-types';
+import type { RoomState as SharedRoomState, ValidatedWebSocketEvent } from 'shared-types';
 import {
-  addParticipant,
-  removeParticipant,
-  updateParticipant,
+  handleEvent,
 } from 'shared-types';
+import FIFO from 'fast-fifo';
 
 interface UIRoomState {
   isConnected: boolean;
+  isSynced: boolean;
   error: string | null;
+  eventIdCache: Set<string>;
+  eventIdCacheFifo: FIFO<string>;
 }
 
 interface RoomState extends SharedRoomState, UIRoomState {}
@@ -17,10 +19,7 @@ interface RoomActions {
   setConnected: (isConnected: boolean) => void;
   setError: (error: string | null) => void;
   updateRoomState: (state: SharedRoomState) => void;
-  addParticipant: (participant: { userId: string; name?: string }) => void;
-  removeParticipant: (userId: string) => void;
-  updateParticipant: (userId: string, updates: Partial<Participant>) => void;
-  toggleCardStatus: () => void;
+  updateStateForEvent: (event: ValidatedWebSocketEvent) => void;
   resetRoom: () => void;
 }
 
@@ -29,7 +28,10 @@ const initialState: RoomState = {
   participants: {},
   card_status: 'hidden',
   isConnected: false,
+  isSynced: false,
   error: null,
+  eventIdCache: new Set(),
+  eventIdCacheFifo: new FIFO(),
 };
 
 export const useRoomStore = create<RoomState & RoomActions>((set) => ({
@@ -41,31 +43,26 @@ export const useRoomStore = create<RoomState & RoomActions>((set) => ({
   updateRoomState: (state: SharedRoomState) => set((current: RoomState) => ({
     ...current,
     ...state,
+    isSynced: true,
   })),
 
-  addParticipant: (participant: { userId: string; name?: string }) =>
-    set((state: RoomState) => ({
-      ...state,
-      ...addParticipant(state, participant),
-    })),
+  updateStateForEvent: (event: ValidatedWebSocketEvent) => set((current: RoomState) => {
+    if(event.eventId){
+        if(current.eventIdCache.has(event.eventId)){
+            return current;
+        }
+        current.eventIdCache.add(event.eventId);
+        current.eventIdCacheFifo.push(event.eventId);
+        while(current.eventIdCacheFifo.length > 100){
+            current.eventIdCache.delete(current.eventIdCacheFifo.shift() as string);
+        }
+    }
 
-  removeParticipant: (userId: string) =>
-    set((state: RoomState) => ({
-      ...state,
-      ...removeParticipant(state, userId),
-    })),
-
-  updateParticipant: (userId: string, updates: Partial<Participant>) =>
-    set((state: RoomState) => ({
-      ...state,
-      ...updateParticipant(state, userId, updates),
-    })),
-
-  toggleCardStatus: () =>
-    set((state: RoomState) => ({
-      ...state,
-      card_status: state.card_status === 'hidden' ? 'revealed' : 'hidden',
-    })),
+    return ({
+        ...current,
+        ...handleEvent(current, event),
+    })
+  }),
 
   resetRoom: () =>
     set((state: RoomState) => ({

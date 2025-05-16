@@ -1,13 +1,13 @@
 import { useCallback, useEffect } from 'react';
 import { useWebSocket } from './useWebSocket';
 import { useRoomStore } from '../store/roomStore';
-import type { WebSocketResponse, RoomState } from 'shared-types';
+import type { WebSocketResponse, ValidatedWebSocketEvent } from 'shared-types';
 import {
   isErrorResponse,
   isStateSyncResponse,
   isEventBroadcastResponse,
-  handleEvent,
 } from 'shared-types';
+import { nanoid } from 'nanoid';
 
 interface UseRoomActionsOptions {
   roomId: string;
@@ -15,8 +15,8 @@ interface UseRoomActionsOptions {
   name?: string;
 }
 
-export function useRoomActions({ roomId, userId, name = 'foobar' }: UseRoomActionsOptions) {
-  const { setConnected, setError, updateRoomState, card_status: cardStatus, isConnected, toggleCardStatus, resetRoom } = useRoomStore();
+export function useRoomActions({ roomId, userId, name }: UseRoomActionsOptions) {
+  const { setConnected, setError, updateRoomState, updateStateForEvent, card_status: cardStatus, isConnected, resetRoom } = useRoomStore();
   
   const { sendEvent } = useWebSocket({
     roomId,
@@ -28,9 +28,7 @@ export function useRoomActions({ roomId, userId, name = 'foobar' }: UseRoomActio
         updateRoomState(data.state);
       } else if (isEventBroadcastResponse(data)) {
         try {
-          const currentState = useRoomStore.getState() as RoomState;
-          const newState = handleEvent(currentState, data.message);
-          updateRoomState(newState);
+          updateStateForEvent(data.message)
         } catch (error) {
           setError(error instanceof Error ? error.message : 'Failed to handle event');
         }
@@ -41,53 +39,58 @@ export function useRoomActions({ roomId, userId, name = 'foobar' }: UseRoomActio
     onError: (error: string) => setError(error),
   });
 
+  const sendEventAndUpdateState = useCallback((event: ValidatedWebSocketEvent) => {
+    event.eventId = nanoid();
+    sendEvent(event);
+    updateStateForEvent(event);
+  }, [sendEvent, updateStateForEvent]);
+
   useEffect(() => {
       if(isConnected && name){
-          sendEvent({
-              type: 'set_name',
-              userId,
-              name,
-          })
+        sendEventAndUpdateState({
+            type: 'set_name',
+            userId,
+            name,
+        })
       }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  },[name, sendEvent, isConnected])
+  },[userId, name, sendEventAndUpdateState, isConnected])
 
   const selectCard = useCallback(
     (cardValue: string) => {
-      sendEvent({
+    sendEventAndUpdateState({
         type: 'select_card',
         userId,
         cardValue,
       });
     },
-    [sendEvent, userId],
+    [sendEventAndUpdateState, userId],
   );
 
   const setName = useCallback(
     (name: string) => {
-      sendEvent({
+      sendEventAndUpdateState({
         type: 'set_name',
         userId,
         name,
       });
+
     },
-    [sendEvent, userId],
+    [sendEventAndUpdateState, userId],
   );
 
   const toggleCards = useCallback(() => {
-    sendEvent({
+    sendEventAndUpdateState({
       type: 'toggle_cards',
       value: cardStatus === 'hidden' ? 'revealed' : 'hidden',
     });
-    toggleCardStatus();
-  }, [sendEvent, cardStatus, toggleCardStatus]);
+  }, [sendEventAndUpdateState, cardStatus]);
 
   const reset = useCallback(() => {
-    sendEvent({
+    sendEventAndUpdateState({
       type: 'reset',
     });
     resetRoom();
-  }, [sendEvent, resetRoom]);
+  }, [sendEventAndUpdateState, resetRoom]);
 
   return {
     selectCard,
