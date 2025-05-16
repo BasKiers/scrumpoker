@@ -94,14 +94,12 @@ const Room: React.FC = () => {
               <div className="px-4 py-5 sm:p-6">
                 <div className="flex justify-between items-center mb-4">
                   <h2 className="text-lg font-medium text-gray-900">Voting</h2>
-                  {!hasName && (
-                    <Button
-                      variant="default"
-                      onClick={() => setShowNameModal(true)}
-                    >
-                      Join Voting
-                    </Button>
-                  )}
+                  <Button
+                    variant="default"
+                    onClick={() => hasName ? handleNameSkip() : setShowNameModal(true)}
+                  >
+                    {hasName ? 'Spectate Voting' : 'Join Voting'}
+                  </Button>
                 </div>
                 <div className="flex flex-wrap gap-4 justify-center">
                   {STORY_POINTS.map((value) => (
