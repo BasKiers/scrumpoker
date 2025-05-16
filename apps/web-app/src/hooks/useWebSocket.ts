@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import type {
 	RoomState,
 	WebSocketEvent,
@@ -14,9 +14,18 @@ interface UseWebSocketOptions {
 	userId: string;
 	name?: string;
 	onError?: (error: string) => void;
+	maxReconnectAttempts?: number;
+	reconnectInterval?: number;
 }
 
-export function useWebSocket({ roomId, userId, name, onError }: UseWebSocketOptions) {
+export function useWebSocket({
+	roomId,
+	userId,
+	name,
+	onError,
+	maxReconnectAttempts = 5,
+	reconnectInterval = 2000,
+}: UseWebSocketOptions) {
 	const [socket, setSocket] = useState<WebSocket | null>(null);
 	const [connected, setConnected] = useState(false);
 	const [roomState, setRoomState] = useState<RoomState>({
@@ -24,6 +33,9 @@ export function useWebSocket({ roomId, userId, name, onError }: UseWebSocketOpti
 		participants: {},
 		card_status: 'hidden',
 	});
+
+	const reconnectAttempts = useRef<number>(0);
+	const reconnectTimeout = useRef<number>();
 
 	const connect = useCallback(() => {
 		const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
@@ -35,6 +47,7 @@ export function useWebSocket({ roomId, userId, name, onError }: UseWebSocketOpti
 		ws.addEventListener('open', () => {
 			setConnected(true);
 			setSocket(ws);
+			reconnectAttempts.current = 0;
 
 			// Send initial connect event
 			if (name) {
@@ -62,24 +75,36 @@ export function useWebSocket({ roomId, userId, name, onError }: UseWebSocketOpti
 			}
 		});
 
-		ws.addEventListener('close', () => {
+		ws.addEventListener('close', (event) => {
 			setConnected(false);
 			setSocket(null);
-			// Attempt to reconnect after a delay
-			setTimeout(connect, 2000);
+
+			// Only attempt to reconnect if the connection was closed unexpectedly
+			// and we haven't exceeded the maximum number of attempts
+			if (event.code !== 1000 && reconnectAttempts.current < maxReconnectAttempts) {
+				reconnectAttempts.current += 1;
+				const delay = reconnectInterval * Math.pow(2, reconnectAttempts.current - 1); // Exponential backoff
+				reconnectTimeout.current = window.setTimeout(connect, delay);
+			} else if (reconnectAttempts.current >= maxReconnectAttempts) {
+				onError?.('Maximum reconnection attempts reached. Please refresh the page.');
+			}
 		});
 
 		ws.addEventListener('error', () => {
+			onError?.('WebSocket connection error. Attempting to reconnect...');
 			ws.close();
 		});
 
 		return ws;
-	}, [roomId, userId, name, onError]);
+	}, [roomId, userId, name, onError, maxReconnectAttempts, reconnectInterval]);
 
 	useEffect(() => {
 		const ws = connect();
 
 		return () => {
+			if (reconnectTimeout.current) {
+				window.clearTimeout(reconnectTimeout.current);
+			}
 			ws.close();
 		};
 	}, [connect]);
@@ -87,10 +112,16 @@ export function useWebSocket({ roomId, userId, name, onError }: UseWebSocketOpti
 	const sendEvent = useCallback(
 		(event: WebSocketEvent) => {
 			if (socket && connected) {
-				socket.send(JSON.stringify(event));
+				try {
+					socket.send(JSON.stringify(event));
+				} catch (error) {
+					onError?.(error instanceof Error ? error.message : 'Failed to send WebSocket message');
+				}
+			} else {
+				onError?.('Cannot send message: WebSocket is not connected');
 			}
 		},
-		[socket, connected],
+		[socket, connected, onError],
 	);
 
 	const selectCard = useCallback(
