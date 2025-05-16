@@ -142,7 +142,7 @@ const Room: React.FC = () => {
                     {card_status === 'revealed' ? 'Hide Cards' : 'Show Cards'}
                   </Button>
                   <Button
-                    variant="secondary"
+                    variant="destructive"
                     onClick={handleReset}
                   >
                     Reset
