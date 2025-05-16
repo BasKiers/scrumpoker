@@ -10,6 +10,10 @@ export interface Participant {
   selectedCard?: string;
 }
 
+export interface BaseWebSocketEvent {
+  eventId?: string;
+}
+
 export type WebSocketEvent =
   | ConnectEvent
   | DisconnectEvent
@@ -18,35 +22,35 @@ export type WebSocketEvent =
   | ToggleCardsEvent
   | ResetEvent;
 
-export interface ConnectEvent {
+export interface ConnectEvent extends BaseWebSocketEvent {
   type: 'connect';
   userId: string;
   name?: string;
 }
 
-export interface DisconnectEvent {
+export interface DisconnectEvent extends BaseWebSocketEvent {
   type: 'disconnect';
   userId: string;
 }
 
-export interface SelectCardEvent {
+export interface SelectCardEvent extends BaseWebSocketEvent {
   type: 'select_card';
   userId: string;
   cardValue: string;
 }
 
-export interface SetNameEvent {
+export interface SetNameEvent extends BaseWebSocketEvent {
   type: 'set_name';
   userId: string;
   name: string;
 }
 
-export interface ToggleCardsEvent {
+export interface ToggleCardsEvent extends BaseWebSocketEvent {
   type: 'toggle_cards';
   value: 'hidden' | 'revealed';
 }
 
-export interface ResetEvent {
+export interface ResetEvent extends BaseWebSocketEvent {
   type: 'reset';
 }
 
@@ -120,12 +124,14 @@ export type WebSocketResponse = SuccessResponse | ErrorResponse | StateSyncRespo
 export interface SuccessResponse {
   type: 'success';
   eventType: WebSocketEvent['type'];
+  eventId?: string;
   message?: string;
 }
 
 export interface ErrorResponse {
   type: 'error';
   eventType: WebSocketEvent['type'];
+  eventId?: string;
   error: string;
   code?: string;
 }
