@@ -1,5 +1,5 @@
 import React from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import StoryPointCard from '../components/StoryPointCard';
 import ParticipantsTable from '../components/ParticipantsTable';
 import { useRoomActions } from '../hooks/useRoomActions';
@@ -9,12 +9,14 @@ import { Alert, AlertDescription } from '../components/ui/alert';
 import { useUser } from '@/contexts/UserContext';
 import NameModal from '../components/NameModal';
 import { ConfirmationModal } from '../components/ConfirmationModal';
+import { ArrowLeft, Copy } from 'lucide-react';
 import '../styles/responsive.css';
 
 const STORY_POINTS = ['?', '1', '2', '3', '5', '8', '13', '20'];
 
 const Room: React.FC = () => {
   const { roomId } = useParams<{ roomId: string }>();
+  const navigate = useNavigate();
   const { userId, name, setName, clearName } = useUser();
   const [showNameModal, setShowNameModal] = React.useState<'joining' | 'done' | 're-enter'>('done');
   const [showResetConfirmation, setShowResetConfirmation] = React.useState(false);
@@ -83,11 +85,38 @@ const Room: React.FC = () => {
 
   const hasName = Boolean(participants[userId]?.name);
 
+  const handleCopyUrl = () => {
+    navigator.clipboard.writeText(window.location.href);
+  };
+
   return (
     <div className="room-page min-h-screen bg-gray-50">
       <header className="bg-white shadow">
-        <div className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
-          <h1 className="text-3xl font-bold text-gray-900">Room: {roomId}</h1>
+        <div className="max-w-7xl mx-auto py-4 px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => navigate('/')}
+                className="hover:bg-gray-100"
+              >
+                <ArrowLeft className="h-5 w-5" />
+              </Button>
+              <div className="flex items-center gap-2">
+                <span className="text-sm text-gray-500">Room:</span>
+                <span className="text-sm font-medium text-gray-900">{roomId}</span>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={handleCopyUrl}
+                  className="hover:bg-gray-100"
+                >
+                  <Copy className="h-4 w-4" />
+                </Button>
+              </div>
+            </div>
+          </div>
         </div>
       </header>
 
