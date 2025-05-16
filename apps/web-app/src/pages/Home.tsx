@@ -1,7 +1,130 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
+import { Button } from '@/components/ui/button';
 
 const Home: React.FC = () => {
-  return <h1>Home Page</h1>;
+  const navigate = useNavigate();
+
+  const createRoom = () => {
+    // TODO: Implement room creation with nanoid
+    navigate('/room/new');
+  };
+
+  return (
+    <div className="min-h-screen bg-background">
+      <main className="container mx-auto px-4 py-8">
+        <section className="flex flex-col items-center justify-center text-center space-y-8 py-16">
+          <h1 className="text-4xl font-bold tracking-tighter sm:text-5xl md:text-6xl">
+            Collaborative Story Point Estimation
+          </h1>
+          <p className="max-w-[700px] text-muted-foreground text-lg sm:text-xl">
+            Create a room to start estimating story points with your team. Simple, fast, and effective.
+          </p>
+          <Button 
+            size="lg" 
+            onClick={createRoom}
+            className="text-lg px-8 py-6"
+          >
+            Create Room
+          </Button>
+        </section>
+
+        <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 py-16">
+          <div className="flex flex-col items-center text-center space-y-4">
+            <div className="rounded-full bg-primary/10 p-4">
+              <svg
+                className="h-6 w-6 text-primary"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"
+                />
+              </svg>
+            </div>
+            <h3 className="text-xl font-bold">Real-time Collaboration</h3>
+            <p className="text-muted-foreground">
+              Work together with your team in real-time, no matter where you are.
+            </p>
+          </div>
+
+          <div className="flex flex-col items-center text-center space-y-4">
+            <div className="rounded-full bg-primary/10 p-4">
+              <svg
+                className="h-6 w-6 text-primary"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M13 10V3L4 14h7v7l9-11h-7z"
+                />
+              </svg>
+            </div>
+            <h3 className="text-xl font-bold">Fast & Simple</h3>
+            <p className="text-muted-foreground">
+              Get started in seconds with our intuitive interface.
+            </p>
+          </div>
+
+          <div className="flex flex-col items-center text-center space-y-4">
+            <div className="rounded-full bg-primary/10 p-4">
+              <svg
+                className="h-6 w-6 text-primary"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
+                />
+              </svg>
+            </div>
+            <h3 className="text-xl font-bold">No Account Required</h3>
+            <p className="text-muted-foreground">
+              Start estimating immediately without any sign-up process.
+            </p>
+          </div>
+
+          <div className="flex flex-col items-center text-center space-y-4">
+            <div className="rounded-full bg-primary/10 p-4">
+              <svg
+                className="h-6 w-6 text-primary"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
+                />
+              </svg>
+            </div>
+            <h3 className="text-xl font-bold">Works Everywhere</h3>
+            <p className="text-muted-foreground">
+              Access from any device with a modern web browser.
+            </p>
+          </div>
+        </section>
+      </main>
+    </div>
+  );
 };
 
 export default Home;
