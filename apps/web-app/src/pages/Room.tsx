@@ -6,7 +6,7 @@ import { useRoomActions } from '../hooks/useRoomActions';
 import { useRoomStore } from '../store/roomStore';
 import { Button } from '../components/ui/button';
 import { Alert, AlertDescription } from '../components/ui/alert';
-import { getUserId } from '@/utils/localStorage';
+import { getUserId, getLastKnownName, setLastKnownName, clearLastKnownName } from '@/utils/localStorage';
 import NameModal from '../components/NameModal';
 
 const STORY_POINTS = ['?', '1', '2', '3', '5', '8', '13', '20'];
@@ -14,7 +14,7 @@ const STORY_POINTS = ['?', '1', '2', '3', '5', '8', '13', '20'];
 const Room: React.FC = () => {
   const { roomId } = useParams<{ roomId: string }>();
   const [currentUserId] = React.useState(getUserId());
-  const [showNameModal, setShowNameModal] = React.useState(false);
+  const [showNameModal, setShowNameModal] = React.useState<'joining' | 'done' | 're-enter'>('done');
 
   const { selectCard, toggleCards, reset, setName } = useRoomActions({
     roomId: roomId || 'default',
@@ -22,19 +22,24 @@ const Room: React.FC = () => {
   });
 
   const { participants, card_status, error, isSynced } = useRoomStore();
+  const activeParticipants = Object.fromEntries(Object.entries(participants).filter(([, {name}]) => Boolean(name)));
 
   // Check if user needs to set their name after state sync
   React.useEffect(() => {
-    console.log(isSynced, currentUserId, participants, showNameModal)
     if(!isSynced) return;
     const currentParticipant = participants[currentUserId];
-    console.log('checking', currentParticipant, currentParticipant?.name)
     if (currentParticipant?.name === undefined) {
-      setShowNameModal(true);
-    } else if(showNameModal) {
-      setShowNameModal(false);
+      const lastKnownName = getLastKnownName();
+      if (lastKnownName) {
+        setName(lastKnownName);
+        setShowNameModal('done');
+      } else {
+        setShowNameModal('joining');
+      }
+    } else if(showNameModal === 'joining') {
+      setShowNameModal('done');
     }
-  }, [currentUserId, isSynced, participants, showNameModal]);
+  }, [currentUserId, isSynced, participants, showNameModal, setName]);
 
   const handleCardSelect = (value: string) => {
     selectCard(value);
@@ -50,17 +55,17 @@ const Room: React.FC = () => {
 
   const handleNameSubmit = (name: string) => {
     setName(name);
-    setShowNameModal(false);
+    setLastKnownName(name);
+    setShowNameModal('done');
   };
 
   const handleNameSkip = () => {
     setName('');
-    setShowNameModal(false);
+    clearLastKnownName();
+    setShowNameModal('done');
   };
 
-  const currentParticipant = participants[currentUserId];
-  const hasName = Boolean(currentParticipant?.name);
-
+  const hasName = Boolean(participants[currentUserId]?.name);
   return (
     <div className="room-page min-h-screen bg-gray-50">
       <header className="bg-white shadow">
@@ -82,7 +87,7 @@ const Room: React.FC = () => {
               <div className="px-4 py-5 sm:p-6">
                 <h2 className="text-lg font-medium text-gray-900 mb-4">Participants</h2>
                 <ParticipantsTable
-                  participants={participants}
+                  participants={activeParticipants}
                   cardsRevealed={card_status === 'revealed'}
                   currentUserId={currentUserId}
                 />
@@ -96,7 +101,7 @@ const Room: React.FC = () => {
                   <h2 className="text-lg font-medium text-gray-900">Voting</h2>
                   <Button
                     variant="default"
-                    onClick={() => hasName ? handleNameSkip() : setShowNameModal(true)}
+                    onClick={() => hasName ? handleNameSkip() : setShowNameModal('joining')}
                   >
                     {hasName ? 'Spectate Voting' : 'Join Voting'}
                   </Button>
@@ -106,7 +111,7 @@ const Room: React.FC = () => {
                     <StoryPointCard
                       key={value}
                       value={value}
-                      selected={participants[currentUserId]?.selectedCard === value}
+                      selected={activeParticipants[currentUserId]?.selectedCard === value}
                       onClick={() => handleCardSelect(value)}
                       disabled={!hasName}
                     />
@@ -116,7 +121,7 @@ const Room: React.FC = () => {
                   <Button
                     variant="default"
                     onClick={handleShowCards}
-                    disabled={Object.values(participants).some(p => !p.selectedCard)}
+                    disabled={!Object.values(activeParticipants).some(p => p.selectedCard)}
                   >
                     {card_status === 'revealed' ? 'Hide Cards' : 'Show Cards'}
                   </Button>
@@ -134,7 +139,7 @@ const Room: React.FC = () => {
       </main>
 
       <NameModal
-        isOpen={showNameModal}
+        isOpen={showNameModal !== 'done'}
         onSubmit={handleNameSubmit}
         onSkip={handleNameSkip}
         roomUrl={window.location.href}
