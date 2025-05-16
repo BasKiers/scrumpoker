@@ -131,7 +131,7 @@ const ParticipantsTable: React.FC<ParticipantsTableProps> = ({
                       console.log(latest);
                     }}
                   >
-                    {!cardsRevealed ? '?' : participant.selectedCard}
+                    {!cardsRevealed ? '⸮' : participant.selectedCard}
                   </motion.div>
                 ) : (
                   <span className="text-gray-400">-</span>
