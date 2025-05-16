@@ -1,4 +1,5 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
+import { Reorder } from 'framer-motion';
 import type { Participant } from 'shared-types';
 
 interface ParticipantsTableProps {
@@ -12,24 +13,47 @@ const ParticipantsTable: React.FC<ParticipantsTableProps> = ({
   cardsRevealed,
   currentUserId,
 }) => {
-  // Sort participants: waiting first, then voted, and current user always first
-  const sortedParticipants = Object.values(participants).sort((a, b) => {
-    // Current user always comes first
-    if (a.userId === currentUserId) return -1;
-    if (b.userId === currentUserId) return 1;
-    
-    // Then sort by voting status
-    const aHasVoted = !!a.selectedCard;
-    const bHasVoted = !!b.selectedCard;
-    
-    if (aHasVoted === bHasVoted) {
-      // If same status, sort by name
-      return (a.name || '').localeCompare(b.name || '');
+  const [flipping, setFlipping] = useState(false);
+  const [sortedParticipants, setSortedParticipants] = useState<Participant[]>([]);
+
+  useEffect(() => {
+    if (cardsRevealed) {
+      setFlipping(true);
+      const timer = setTimeout(() => {
+        setFlipping(false);
+      }, 200);
+      return () => clearTimeout(timer);
     }
-    
-    // Waiting comes before voted
-    return aHasVoted ? 1 : -1;
-  });
+  }, [cardsRevealed]);
+
+  useEffect(() => {
+    const sorted = Object.values(participants).sort((a, b) => {
+      // Current user always comes first
+      if (a.userId === currentUserId) return -1;
+      if (b.userId === currentUserId) return 1;
+
+      // If cards are revealed, sort by card value (highest to lowest)
+      if (cardsRevealed) {
+        const aValue = a.selectedCard ? parseInt(a.selectedCard) : -1;
+        const bValue = b.selectedCard ? parseInt(b.selectedCard) : -1;
+        return bValue - aValue;
+      }
+
+      // Otherwise, sort by voting status
+      const aHasVoted = !!a.selectedCard;
+      const bHasVoted = !!b.selectedCard;
+
+      if (aHasVoted === bHasVoted) {
+        // If same status, sort by name
+        return (a.name || '').localeCompare(b.name || '');
+      }
+
+      // Waiting comes before voted
+      return aHasVoted ? 1 : -1;
+    });
+
+    setSortedParticipants(sorted);
+  }, [participants, cardsRevealed, currentUserId]);
 
   return (
     <div className="overflow-x-auto">
@@ -47,11 +71,15 @@ const ParticipantsTable: React.FC<ParticipantsTableProps> = ({
             </th>
           </tr>
         </thead>
-        <tbody className="bg-white divide-y divide-gray-200">
+        <Reorder.Group as="tbody" axis="y" values={sortedParticipants} className="bg-white divide-y divide-gray-200">
           {sortedParticipants.map((participant) => (
-            <tr 
+            <Reorder.Item
               key={participant.userId}
-              className={participant.userId === currentUserId ? 'bg-blue-50' : ''}
+              value={participant}
+              className={`${participant.userId === currentUserId ? 'bg-blue-50' : ''}`}
+              as='tr'
+              drag={false}
+              transition={{ delay: 0.2 }}
             >
               <td className="px-6 py-4 whitespace-nowrap">
                 <div className="flex items-center">
@@ -80,20 +108,18 @@ const ParticipantsTable: React.FC<ParticipantsTableProps> = ({
               </td>
               <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                 {participant.selectedCard ? (
-                  <div className={`w-8 h-12 rounded border-2 flex items-center justify-center ${
-                    cardsRevealed 
-                      ? 'bg-white border-blue-500' 
-                      : 'bg-gray-100 border-gray-300'
-                  }`}>
-                    {cardsRevealed ? participant.selectedCard : '?'}
+                  <div className={`w-8 h-12 rounded border-2 flex items-center justify-center transition-transform duration-200 ease-in-out ${
+                    flipping ? 'transform rotate-y-90' : ''
+                  } ${(cardsRevealed && flipping) || (!cardsRevealed && !flipping) ? 'bg-gray-100 border-gray-300' : 'bg-white border-blue-500' }`}>
+                    {(cardsRevealed && flipping) || (!cardsRevealed && !flipping) ? '?' : participant.selectedCard}
                   </div>
                 ) : (
                   <span className="text-gray-400">-</span>
                 )}
               </td>
-            </tr>
+            </Reorder.Item>
           ))}
-        </tbody>
+        </Reorder.Group>
       </table>
     </div>
   );
