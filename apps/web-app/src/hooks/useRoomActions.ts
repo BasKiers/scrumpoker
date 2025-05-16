@@ -1,6 +1,13 @@
 import { useCallback } from 'react';
 import { useWebSocket } from './useWebSocket';
 import { useRoomStore } from '../store/roomStore';
+import type { WebSocketResponse, RoomState } from 'shared-types';
+import {
+  isErrorResponse,
+  isStateSyncResponse,
+  isEventBroadcastResponse,
+  handleEvent,
+} from 'shared-types';
 
 interface UseRoomActionsOptions {
   roomId: string;
@@ -9,9 +16,33 @@ interface UseRoomActionsOptions {
 }
 
 export function useRoomActions({ roomId, userId, name }: UseRoomActionsOptions) {
-  const { sendEvent } = useWebSocket({ roomId, userId, name });
+  const { setConnected, setError, updateRoomState } = useRoomStore();
   const cardStatus = useRoomStore((state) => state.card_status);
   const { toggleCardStatus, resetRoom } = useRoomStore();
+
+  const { sendEvent } = useWebSocket({
+    roomId,
+    userId,
+    name,
+    onConnect: () => setConnected(true),
+    onDisconnect: () => setConnected(false),
+    onMessage: (data: WebSocketResponse) => {
+      if (isStateSyncResponse(data)) {
+        updateRoomState(data.state);
+      } else if (isEventBroadcastResponse(data)) {
+        try {
+          const currentState = useRoomStore.getState() as RoomState;
+          const newState = handleEvent(currentState, data.message);
+          updateRoomState(newState);
+        } catch (error) {
+          setError(error instanceof Error ? error.message : 'Failed to handle event');
+        }
+      } else if (isErrorResponse(data)) {
+        setError(data.error);
+      }
+    },
+    onError: (error: string) => setError(error),
+  });
 
   const selectCard = useCallback(
     (cardValue: string) => {

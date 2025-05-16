@@ -1,32 +1,18 @@
-import type { RoomState, WebSocketEvent, WebSocketResponse } from '../types';
+import type { RoomState, WebSocketEvent } from '../types';
 import { eventHandlers } from './handlers';
 
 export * from './EventHandler';
 export * from './handlers';
 
-export function handleEvent(state: RoomState, event: WebSocketEvent): WebSocketResponse {
+export function handleEvent(state: RoomState, event: WebSocketEvent): RoomState {
   const handler = eventHandlers.get(event.type);
   if (!handler) {
-    return {
-      type: 'error',
-      eventType: event.type,
-      error: `No handler found for event type: ${event.type}`,
-      code: 'NO_HANDLER',
-    };
+    throw new Error(`No handler found for event type: ${event.type}`);
   }
 
   try {
-    const newState = handler.handle(state, event);
-    return {
-      type: 'state_sync',
-      state: newState,
-    };
+    return handler.handle(state, event);
   } catch (error) {
-    return {
-      type: 'error',
-      eventType: event.type,
-      error: error instanceof Error ? error.message : 'Unknown error occurred',
-      code: 'HANDLER_ERROR',
-    };
+    throw new Error(error instanceof Error ? error.message : 'Unknown error occurred');
   }
 } 
