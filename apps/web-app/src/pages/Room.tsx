@@ -90,7 +90,7 @@ const Room: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background flex flex-col">
       <header className="border-b">
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
@@ -120,8 +120,8 @@ const Room: React.FC = () => {
         </div>
       </header>
 
-      <main className="container mx-auto px-4 py-8">
-        <div className="max-w-5xl mx-auto">
+      <main className="flex-1 container mx-auto px-4 py-8">
+        <div className="max-w-5xl mx-auto w-full">
           {error && (
             <Alert variant="destructive" className="mb-6">
               <AlertDescription>{error}</AlertDescription>
