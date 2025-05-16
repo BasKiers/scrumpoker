@@ -1,0 +1,499 @@
+{
+  "tasks": [
+    {
+      "id": 1,
+      "title": "Create Shared Types Package",
+      "description": "Create a shared package containing types for room state, websocket events, and communication between frontend and backend",
+      "details": "Create a new package that will be imported by both frontend and backend:\n1. Define RoomState interface with participants record, card_status property\n2. Define Participant interface with userId, name, and selectedCard properties\n3. Define WebSocketEvent types for all events (connect, disconnect, select card, reset, show/hide cards, set name)\n4. Create utility functions for state updates that can be used by both client and server\n5. Export types and utilities for use in both frontend and backend projects\n\nExample types:\n```typescript\nexport interface Participant {\n  userId: string;\n  name?: string;\n  selectedCard?: string;\n}\n\nexport interface RoomState {\n  participants: Record<string, Participant>;\n  card_status: 'hidden' | 'revealed';\n}\n\nexport type WebSocketEvent = \n  | { type: 'connect', userId: string, name?: string }\n  | { type: 'disconnect', userId: string }\n  | { type: 'select_card', userId: string, cardValue: string }\n  | { type: 'set_name', userId: string, name: string }\n  | { type: 'toggle_cards', value: 'hidden' | 'revealed' }\n  | { type: 'reset' };\n```",
+      "testStrategy": "Write unit tests for the utility functions that update state based on events. Ensure type definitions are comprehensive and correctly represent the data structures described in the PRD.",
+      "priority": "high",
+      "dependencies": [],
+      "status": "done",
+      "subtasks": [
+        {
+          "id": 1,
+          "title": "Define Core Interfaces",
+          "description": "Create TypeScript interfaces for RoomState, Participant, and other core data structures needed across frontend and backend",
+          "dependencies": [],
+          "details": "Implement the following interfaces:\n- RoomState: Should contain room ID, participants list, active speaker, etc.\n- Participant: Should include ID, name, connection status, video/audio states\n- Additional interfaces for configuration options\n\nEnsure all properties have appropriate types and include JSDoc comments. Create a test file with type assertions to verify interface compatibility with sample data.",
+          "status": "done"
+        },
+        {
+          "id": 2,
+          "title": "Define WebSocketEvent Types and Type Guards",
+          "description": "Create TypeScript types for all WebSocket events and implement type guard functions",
+          "dependencies": [
+            1
+          ],
+          "details": "Create union types for all possible WebSocket events (JoinRoom, LeaveRoom, UpdateParticipant, etc.). For each event type:\n- Define payload structure\n- Implement type guard functions (isJoinRoomEvent, isLeaveRoomEvent, etc.)\n- Create a discriminated union with 'type' field\n\nWrite unit tests for type guards to ensure they correctly identify event types from sample payloads.",
+          "status": "done"
+        },
+        {
+          "id": 3,
+          "title": "Create Utility Functions for State Updates",
+          "description": "Implement pure functions for updating room state based on events",
+          "dependencies": [
+            1,
+            2
+          ],
+          "details": "Create the following utility functions:\n- addParticipant(state, participant): Adds a participant to room state\n- removeParticipant(state, participantId): Removes a participant\n- updateParticipant(state, participantId, updates): Updates participant properties\n- setActiveSpeaker(state, participantId): Updates active speaker\n\nEnsure functions are pure (no side effects) and return new state objects. Write unit tests for each function with various scenarios including edge cases.",
+          "status": "done"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "title": "Setup React Frontend Project",
+      "description": "Initialize a React project for the frontend that will be hosted on Cloudflare Pages",
+      "details": "1. Create a new React project using Vite or Create React App\n2. Set up routing with React Router for homepage and room routes\n3. Configure project for Cloudflare Pages deployment\n4. Install necessary dependencies: nanoid, react-router-dom, and the shared types package\n5. Create basic folder structure for components, hooks, and utilities\n6. Set up a basic layout component with header and main content area\n7. Configure TypeScript for type safety\n\nExample folder structure:\n```\nsrc/\n  components/\n    Layout/\n    StoryPointCard/\n    ParticipantsTable/\n    NameModal/\n  hooks/\n    useWebSocket.ts\n    useRoomState.ts\n  pages/\n    HomePage.tsx\n    RoomPage.tsx\n  utils/\n    localStorage.ts\n  App.tsx\n  main.tsx\n```",
+      "testStrategy": "Set up Jest or Vitest for unit testing. Create smoke tests to ensure the application renders without crashing. Test routing functionality to ensure navigation between pages works correctly.",
+      "priority": "high",
+      "dependencies": [
+        1
+      ],
+      "status": "done",
+      "subtasks": [
+        {
+          "id": 1,
+          "title": "Initialize project with Vite and configure TypeScript",
+          "description": "Create a new React project using Vite and set up TypeScript configuration",
+          "dependencies": [],
+          "details": "1. Install Node.js and npm if not already installed\n2. Run `npm create vite@latest my-app --template react-ts`\n3. Navigate to project directory: `cd my-app`\n4. Install dependencies: `npm install`\n5. Configure tsconfig.json with strict type checking\n6. Add path aliases for cleaner imports\n7. Install essential dependencies: `npm install react-router-dom axios`\n8. Test the setup with `npm run dev`",
+          "status": "done"
+        },
+        {
+          "id": 2,
+          "title": "Set up folder structure and routing",
+          "description": "Establish a scalable folder structure and implement routing with React Router",
+          "dependencies": [
+            1
+          ],
+          "details": "1. Create directory structure:\n   - src/components (shared components)\n   - src/pages (page components)\n   - src/hooks (custom hooks)\n   - src/utils (utility functions)\n   - src/services (API services)\n   - src/assets (static assets)\n   - src/types (TypeScript interfaces/types)\n2. Set up React Router in main.tsx\n3. Create basic routes in a routes.tsx file\n4. Implement lazy loading for routes\n5. Add a 404 page component\n6. Create navigation guards if needed",
+          "status": "done"
+        },
+        {
+          "id": 3,
+          "title": "Configure Cloudflare Pages deployment",
+          "description": "Set up the project for deployment to Cloudflare Pages",
+          "dependencies": [
+            1
+          ],
+          "details": "1. Create a Cloudflare account if needed\n2. Set up a GitHub repository for the project\n3. Push the code to the repository\n4. In Cloudflare Dashboard, go to Pages and create a new project\n5. Connect to the GitHub repository\n6. Configure build settings:\n   - Build command: `npm run build`\n   - Build output directory: `dist`\n7. Add environment variables if needed\n8. Configure custom domain if required\n9. Set up preview deployments for pull requests",
+          "status": "done"
+        },
+        {
+          "id": 4,
+          "title": "Create basic layout components",
+          "description": "Develop reusable layout components for consistent UI structure",
+          "dependencies": [
+            2
+          ],
+          "details": "1. Create a MainLayout component with:\n   - Header\n   - Footer\n   - Navigation menu\n   - Content area\n2. Implement responsive design with CSS or a UI library\n3. Create common UI components:\n   - Button component\n   - Card component\n   - Modal component\n   - Form elements\n4. Set up global styles and theme variables\n5. Implement dark/light mode toggle if needed\n6. Test layouts across different screen sizes",
+          "status": "done"
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "title": "Implement DurableObject with WebSocket Hibernation",
+      "description": "Create a Cloudflare Worker with DurableObject that implements WebSocket hibernation for room state management",
+      "details": "1. Create a new Cloudflare Worker project\n2. Implement a DurableObject class for room state management\n3. Configure WebSocket hibernation following Cloudflare documentation\n4. Implement connection handling to add participants when they connect\n5. Implement state management and event broadcasting\n6. Create a Worker that routes requests to the appropriate DurableObject instance based on roomId\n\nExample implementation:\n```typescript\nexport class RoomDurableObject implements DurableObject {\n  private state: RoomState = {\n    participants: {},\n    card_status: 'hidden'\n  };\n  private sessions = new Map<WebSocket, string>(); // WebSocket to userId mapping\n\n  constructor(private ctx: DurableObjectState, private env: Env) {\n    this.ctx.blockConcurrencyWhile(async () => {\n      const stored = await this.ctx.storage.get<RoomState>('state');\n      if (stored) this.state = stored;\n    });\n  }\n\n  async fetch(request: Request): Promise<Response> {\n    const url = new URL(request.url);\n    if (url.pathname.endsWith('/websocket')) {\n      const userId = url.searchParams.get('userId');\n      if (!userId) return new Response('Missing userId', { status: 400 });\n      \n      const pair = new WebSocketPair();\n      await this.handleSession(pair[1], userId);\n      return new Response(null, { status: 101, webSocket: pair[0] });\n    }\n    return new Response('Not found', { status: 404 });\n  }\n\n  async handleSession(webSocket: WebSocket, userId: string) {\n    webSocket.accept();\n    this.sessions.set(webSocket, userId);\n    \n    // Add participant if not exists\n    if (!this.state.participants[userId]) {\n      this.state.participants[userId] = { userId };\n      await this.ctx.storage.put('state', this.state);\n    }\n    \n    // Send current state to the new connection\n    webSocket.send(JSON.stringify({\n      type: 'state_sync',\n      state: this.state\n    }));\n    \n    // Broadcast new participant to others\n    this.broadcast({\n      type: 'participant_joined',\n      participant: this.state.participants[userId]\n    }, userId);\n    \n    // Handle incoming messages\n    webSocket.addEventListener('message', async msg => {\n      try {\n        const data = JSON.parse(msg.data as string) as WebSocketEvent;\n        await this.handleEvent(data, userId);\n      } catch (err) {\n        console.error('Error handling message', err);\n      }\n    });\n    \n    // Handle disconnection\n    const closeHandler = async () => {\n      this.sessions.delete(webSocket);\n      \n      // Check if this was the last connection for this userId\n      let userStillConnected = false;\n      for (const [, id] of this.sessions) {\n        if (id === userId) {\n          userStillConnected = true;\n          break;\n        }\n      }\n      \n      if (!userStillConnected && this.state.participants[userId]) {\n        delete this.state.participants[userId];\n        await this.ctx.storage.put('state', this.state);\n        this.broadcast({\n          type: 'participant_left',\n          userId\n        });\n      }\n    };\n    \n    webSocket.addEventListener('close', closeHandler);\n    webSocket.addEventListener('error', closeHandler);\n  }\n  \n  async handleEvent(event: WebSocketEvent, senderId: string) {\n    // Implement event handling logic based on event type\n    // Update state and broadcast changes to all connected clients\n    // Save state to storage\n  }\n  \n  broadcast(message: any, excludeUserId?: string) {\n    const serialized = JSON.stringify(message);\n    for (const [ws, userId] of this.sessions) {\n      if (!excludeUserId || userId !== excludeUserId) {\n        ws.send(serialized);\n      }\n    }\n  }\n}\n```",
+      "testStrategy": "Write unit tests for the DurableObject class to verify state management and event handling. Test WebSocket connection handling, participant management, and event broadcasting. Use mocks for WebSocket and DurableObjectState.",
+      "priority": "high",
+      "dependencies": [
+        1
+      ],
+      "status": "done",
+      "subtasks": [
+        {
+          "id": 1,
+          "title": "Set up Cloudflare Worker project structure",
+          "description": "Initialize and configure the Cloudflare Worker project with necessary dependencies and configuration for DurableObjects.",
+          "dependencies": [],
+          "details": "1. Install Wrangler CLI tool using npm: `npm install -g wrangler`\n2. Initialize a new Worker project: `wrangler init websocket-hibernation`\n3. Configure wrangler.toml with DurableObject bindings and migrations\n4. Set up project directory structure (src folder, tests folder)\n5. Install required dependencies: `npm install --save @cloudflare/workers-types`\n6. Create initial Worker script with DurableObject binding\n7. Test the setup by running `wrangler dev` and verifying the Worker loads correctly",
+          "status": "done"
+        },
+        {
+          "id": 2,
+          "title": "Implement basic DurableObject class with state management",
+          "description": "Create the DurableObject class with methods for state initialization, persistence, and retrieval.",
+          "dependencies": [
+            1
+          ],
+          "details": "1. Define a DurableObject class in a separate file\n2. Implement constructor with state initialization\n3. Create methods for storing and retrieving state data\n4. Implement state persistence using storage.put() and storage.get()\n5. Add error handling for state operations\n6. Create a method to handle HTTP requests to the DurableObject\n7. Test state persistence by writing and reading values\n8. Verify state survives across DurableObject instantiations",
+          "status": "done"
+        },
+        {
+          "id": 3,
+          "title": "Implement WebSocket connection handling",
+          "description": "Add WebSocket support to the DurableObject, handling connection establishment, message passing, and connection tracking.",
+          "dependencies": [
+            2
+          ],
+          "details": "1. Modify the DurableObject's fetch handler to detect WebSocket upgrade requests\n2. Implement WebSocket acceptance logic using env.acceptWebSocket()\n3. Create a connection tracking system to store active WebSocket connections\n4. Implement message receiving logic with JSON parsing\n5. Add broadcast capability to send messages to all connected clients\n6. Implement connection close handling and cleanup\n7. Test WebSocket connections using a browser client or testing tool\n8. Verify multiple clients can connect simultaneously",
+          "status": "done"
+        },
+        {
+          "id": 4,
+          "title": "Implement event processing logic",
+          "description": "Create the business logic for processing events received via WebSockets and updating the DurableObject state accordingly.",
+          "dependencies": [
+            3
+          ],
+          "details": "1. Define a message format for client-server communication\n2. Implement command pattern for different message types\n3. Create handlers for each message type (e.g., update, query, action)\n4. Add validation for incoming messages\n5. Implement state updates based on valid messages\n6. Add response generation for client messages\n7. Implement error handling for malformed messages\n8. Test with various message scenarios and verify state changes correctly",
+          "status": "done"
+        },
+        {
+          "id": 5,
+          "title": "Implement hibernation and reconnection handling",
+          "description": "Add support for WebSocket hibernation during periods of inactivity and seamless reconnection when clients return.",
+          "dependencies": [
+            4
+          ],
+          "details": "1. Implement an activity tracking mechanism to detect idle connections\n2. Create a hibernation timer that triggers after a configurable idle period\n3. Implement a method to serialize connection state before hibernation\n4. Add logic to send hibernation notice to clients before disconnecting\n5. Implement reconnection protocol with session tokens for clients\n6. Create state restoration logic when clients reconnect with valid tokens\n7. Add graceful degradation for expired sessions\n8. Test hibernation by simulating idle periods and verifying reconnection works correctly",
+          "status": "done"
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "title": "Implement Room UI with Story Point Cards",
+      "description": "Create the UI for the room page with story point cards and participants table",
+      "details": "1. Create a RoomPage component that renders when navigating to /room/:roomId\n2. Implement StoryPointCard component styled as playing cards for values ?, 1, 2, 3, 5, 8, 13, and 20\n3. Implement ParticipantsTable component to display all participants and their selected cards\n4. Add buttons for showing/hiding cards and resetting the state\n5. Implement UI state management using React hooks\n\nExample implementation:\n```tsx\n// StoryPointCard.tsx\ninterface StoryPointCardProps {\n  value: string;\n  selected: boolean;\n  onClick: () => void;\n  disabled?: boolean;\n}\n\nconst StoryPointCard: React.FC<StoryPointCardProps> = ({ value, selected, onClick, disabled }) => {\n  return (\n    <button \n      className={`card ${selected ? 'selected' : ''}`} \n      onClick={onClick}\n      disabled={disabled}\n    >\n      {value}\n    </button>\n  );\n};\n\n// ParticipantsTable.tsx\ninterface ParticipantsTableProps {\n  participants: Record<string, Participant>;\n  cardsRevealed: boolean;\n}\n\nconst ParticipantsTable: React.FC<ParticipantsTableProps> = ({ participants, cardsRevealed }) => {\n  return (\n    <table className=\"participants-table\">\n      <thead>\n        <tr>\n          <th>Name</th>\n          <th>Card</th>\n        </tr>\n      </thead>\n      <tbody>\n        {Object.values(participants)\n          .filter(p => p.name && p.name !== p.userId)\n          .map(participant => (\n            <tr key={participant.userId}>\n              <td>{participant.name}</td>\n              <td>\n                {participant.selectedCard ? (\n                  cardsRevealed ? (\n                    <div className=\"card revealed\">{participant.selectedCard}</div>\n                  ) : (\n                    <div className=\"card hidden\">?</div>\n                  )\n                ) : (\n                  <span>No card selected</span>\n                )}\n              </td>\n            </tr>\n          ))}\n      </tbody>\n    </table>\n  );\n};\n\n// RoomPage.tsx\nconst RoomPage: React.FC = () => {\n  const { roomId } = useParams<{ roomId: string }>();\n  const [roomState, setRoomState] = useState<RoomState>({\n    participants: {},\n    card_status: 'hidden'\n  });\n  const [userId, setUserId] = useState<string>('');\n  \n  // Initialize room state and connect to WebSocket\n  useEffect(() => {\n    // Generate or retrieve userId from localStorage\n    // Connect to WebSocket\n    // Handle incoming messages\n  }, [roomId]);\n  \n  const handleCardSelect = (value: string) => {\n    // Send card selection event to WebSocket\n  };\n  \n  const handleToggleCards = () => {\n    // Send toggle cards event to WebSocket\n  };\n  \n  const handleReset = () => {\n    // Send reset event to WebSocket\n  };\n  \n  return (\n    <div className=\"room-page\">\n      <h1>Room: {roomId}</h1>\n      \n      <div className=\"card-selection\">\n        {['?', '1', '2', '3', '5', '8', '13', '20'].map(value => (\n          <StoryPointCard\n            key={value}\n            value={value}\n            selected={roomState.participants[userId]?.selectedCard === value}\n            onClick={() => handleCardSelect(value)}\n          />\n        ))}\n      </div>\n      \n      <div className=\"controls\">\n        <button onClick={handleToggleCards}>\n          {roomState.card_status === 'hidden' ? 'Show Cards' : 'Hide Cards'}\n        </button>\n        <button onClick={handleReset}>Reset</button>\n      </div>\n      \n      <ParticipantsTable \n        participants={roomState.participants} \n        cardsRevealed={roomState.card_status === 'revealed'} \n      />\n    </div>\n  );\n};\n```",
+      "testStrategy": "Write component tests using React Testing Library to verify rendering and interaction with story point cards and participants table. Test that cards can be selected and that the participants table correctly displays participants and their selected cards.",
+      "priority": "medium",
+      "dependencies": [
+        1,
+        2
+      ],
+      "status": "in-progress",
+      "subtasks": [
+        {
+          "id": 1,
+          "title": "Create the RoomPage component with basic layout",
+          "description": "Implement the main RoomPage component with a responsive layout that will contain all other components",
+          "dependencies": [],
+          "details": "Create a React component named RoomPage that includes: 1) A header section with room name and session info, 2) A main content area with placeholders for story point cards and participants table, 3) A footer section for control buttons. Use CSS Grid or Flexbox for responsive layout. Include state variables for roomId, roomName, and sessionStatus. Implement responsive design for mobile, tablet and desktop views with appropriate breakpoints.",
+          "status": "done"
+        },
+        {
+          "id": 2,
+          "title": "Implement the StoryPointCard component with selection functionality",
+          "description": "Create interactive story point cards that users can select to cast their votes",
+          "dependencies": [
+            1
+          ],
+          "details": "Develop a StoryPointCard component that: 1) Displays a card with a story point value (e.g., 1, 2, 3, 5, 8, 13, etc.), 2) Implements selection state with visual feedback when selected, 3) Handles click events to toggle selection, 4) Animates on selection/deselection with CSS transitions. Include props for value, isSelected, and onSelect callback. Style cards with consistent dimensions, rounded corners, shadows, and hover effects.",
+          "status": "done"
+        },
+        {
+          "id": 3,
+          "title": "Implement the ParticipantsTable component",
+          "description": "Create a table component that displays all participants in the room and their voting status",
+          "dependencies": [
+            1
+          ],
+          "details": "Build a ParticipantsTable component that: 1) Displays a list of participants with their names and avatars, 2) Shows voting status (voted/not voted) for each participant, 3) Highlights the current user, 4) Updates in real-time as participants join/leave or change voting status. Include sorting functionality to group participants by status. Style with alternating row colors, appropriate spacing, and status indicators using icons or color coding.",
+          "status": "done"
+        },
+        {
+          "id": 4,
+          "title": "Add room control buttons and state management",
+          "description": "Implement control buttons for room actions and connect all components with shared state management",
+          "dependencies": [
+            1,
+            2,
+            3
+          ],
+          "details": "Implement room control functionality including: 1) Start/End voting session buttons, 2) Reveal votes button, 3) Reset/Clear votes button, 4) Copy room link button. Connect all components with React Context or Redux for shared state management. Handle state transitions between waiting, voting, and results phases. Implement event handlers for all buttons and ensure proper state updates across all components. Add confirmation dialogs for destructive actions like ending sessions or clearing votes.",
+          "status": "pending"
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "title": "Implement WebSocket Connection in Frontend",
+      "description": "Create a custom hook to manage WebSocket connection and state synchronization with the backend",
+      "details": "1. Create a useWebSocket hook that manages the WebSocket connection\n2. Implement connection to the backend with roomId and userId\n3. Handle incoming messages and update local state\n4. Provide methods to send events to the backend\n5. Handle reconnection logic\n\nExample implementation:\n```typescript\n// useWebSocket.ts\nimport { useState, useEffect, useCallback } from 'react';\nimport { RoomState, WebSocketEvent } from 'shared-types';\n\nexport function useWebSocket(roomId: string, userId: string) {\n  const [socket, setSocket] = useState<WebSocket | null>(null);\n  const [connected, setConnected] = useState(false);\n  const [roomState, setRoomState] = useState<RoomState>({\n    participants: {},\n    card_status: 'hidden'\n  });\n  \n  const connect = useCallback(() => {\n    const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';\n    const host = 'your-worker-url.workers.dev';\n    const url = `${protocol}//${host}/room/${roomId}/websocket?userId=${userId}`;\n    \n    const ws = new WebSocket(url);\n    \n    ws.addEventListener('open', () => {\n      setConnected(true);\n      setSocket(ws);\n    });\n    \n    ws.addEventListener('message', (event) => {\n      const data = JSON.parse(event.data);\n      \n      if (data.type === 'state_sync') {\n        setRoomState(data.state);\n      } else if (data.type === 'participant_joined') {\n        setRoomState(prev => ({\n          ...prev,\n          participants: {\n            ...prev.participants,\n            [data.participant.userId]: data.participant\n          }\n        }));\n      } else if (data.type === 'participant_left') {\n        setRoomState(prev => {\n          const newParticipants = { ...prev.participants };\n          delete newParticipants[data.userId];\n          return {\n            ...prev,\n            participants: newParticipants\n          };\n        });\n      } else if (data.type === 'participant_updated') {\n        setRoomState(prev => ({\n          ...prev,\n          participants: {\n            ...prev.participants,\n            [data.participant.userId]: data.participant\n          }\n        }));\n      } else if (data.type === 'card_status_changed') {\n        setRoomState(prev => ({\n          ...prev,\n          card_status: data.value\n        }));\n      }\n    });\n    \n    ws.addEventListener('close', () => {\n      setConnected(false);\n      setSocket(null);\n      // Attempt to reconnect after a delay\n      setTimeout(connect, 2000);\n    });\n    \n    ws.addEventListener('error', () => {\n      ws.close();\n    });\n    \n    return ws;\n  }, [roomId, userId]);\n  \n  useEffect(() => {\n    const ws = connect();\n    \n    return () => {\n      ws.close();\n    };\n  }, [connect]);\n  \n  const sendEvent = useCallback((event: WebSocketEvent) => {\n    if (socket && connected) {\n      socket.send(JSON.stringify(event));\n    }\n  }, [socket, connected]);\n  \n  const selectCard = useCallback((cardValue: string) => {\n    sendEvent({\n      type: 'select_card',\n      userId,\n      cardValue\n    });\n  }, [sendEvent, userId]);\n  \n  const setName = useCallback((name: string) => {\n    sendEvent({\n      type: 'set_name',\n      userId,\n      name\n    });\n  }, [sendEvent, userId]);\n  \n  const toggleCards = useCallback(() => {\n    sendEvent({\n      type: 'toggle_cards',\n      value: roomState.card_status === 'hidden' ? 'revealed' : 'hidden'\n    });\n  }, [sendEvent, roomState.card_status]);\n  \n  const resetRoom = useCallback(() => {\n    sendEvent({\n      type: 'reset'\n    });\n  }, [sendEvent]);\n  \n  return {\n    connected,\n    roomState,\n    selectCard,\n    setName,\n    toggleCards,\n    resetRoom\n  };\n}\n```",
+      "testStrategy": "Write unit tests for the WebSocket hook to verify connection handling, message processing, and event sending. Mock the WebSocket API to simulate server responses and test reconnection logic.",
+      "priority": "high",
+      "dependencies": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "status": "pending",
+      "subtasks": [
+        {
+          "id": 1,
+          "title": "Create basic WebSocket connection hook",
+          "description": "Develop a React custom hook that establishes and manages a WebSocket connection to the backend server.",
+          "dependencies": [],
+          "details": "Implementation steps:\n1. Create a useWebSocket.js file in the hooks directory\n2. Implement connection initialization with configurable endpoint URL\n3. Add connection state tracking (connected, connecting, closed)\n4. Handle basic lifecycle events (onopen, onclose)\n5. Create cleanup function to properly close connection on component unmount\n\nTesting approaches:\n1. Unit test the hook with React Testing Library and mock WebSocket\n2. Test connection establishment and cleanup\n3. Verify state changes on connection events\n\nEdge cases:\n1. Handle invalid WebSocket URLs\n2. Manage connection timeout scenarios\n3. Consider browser compatibility issues",
+          "status": "pending"
+        },
+        {
+          "id": 2,
+          "title": "Implement message handling and state updates",
+          "description": "Add functionality to process incoming WebSocket messages and update application state accordingly.",
+          "dependencies": [
+            1
+          ],
+          "details": "Implementation steps:\n1. Create message parsing logic in the WebSocket hook\n2. Implement message type identification and routing\n3. Add state management for different message types\n4. Create callback system for components to subscribe to specific message types\n5. Implement message queue for handling messages during reconnection\n\nTesting approaches:\n1. Test message parsing with various message formats\n2. Verify state updates occur correctly for each message type\n3. Test callback execution with mock functions\n\nEdge cases:\n1. Handle malformed message data\n2. Manage high-frequency message reception\n3. Handle unexpected message types\n4. Consider race conditions in state updates",
+          "status": "pending"
+        },
+        {
+          "id": 3,
+          "title": "Add event sending functionality",
+          "description": "Implement methods to send messages and events to the WebSocket server with proper error handling.",
+          "dependencies": [
+            1,
+            2
+          ],
+          "details": "Implementation steps:\n1. Create send function in the WebSocket hook\n2. Implement message formatting and serialization\n3. Add message type helpers for common operations\n4. Implement queue for messages sent during disconnected state\n5. Add acknowledgment tracking for critical messages\n\nTesting approaches:\n1. Test send function with various payload types\n2. Verify message queuing during disconnection\n3. Test retry logic for failed sends\n\nEdge cases:\n1. Handle send attempts when disconnected\n2. Manage message size limitations\n3. Implement timeout handling for unacknowledged messages\n4. Consider rate limiting to prevent flooding",
+          "status": "pending"
+        },
+        {
+          "id": 4,
+          "title": "Implement reconnection logic and error handling",
+          "description": "Add robust reconnection capabilities and comprehensive error handling to ensure WebSocket reliability.",
+          "dependencies": [
+            1,
+            2,
+            3
+          ],
+          "details": "Implementation steps:\n1. Implement exponential backoff for reconnection attempts\n2. Add configurable reconnection parameters (max attempts, delay)\n3. Create connection health monitoring\n4. Implement heartbeat mechanism to detect zombie connections\n5. Add comprehensive error classification and handling\n\nTesting approaches:\n1. Test reconnection under various failure scenarios\n2. Verify backoff timing and attempt limits\n3. Test heartbeat mechanism with simulated network issues\n4. Verify error handling and user notifications\n\nEdge cases:\n1. Handle browser sleep/resume scenarios\n2. Manage reconnection during network changes\n3. Handle server-initiated disconnects vs. network failures\n4. Implement graceful degradation when WebSockets are unavailable",
+          "status": "pending"
+        }
+      ]
+    },
+    {
+      "id": 6,
+      "title": "Implement User Identification and Name Setting",
+      "description": "Implement localStorage for userId persistence and a modal for setting user name",
+      "details": "1. Create a utility for generating and storing userId in localStorage\n2. Implement a modal component for setting user name\n3. Add logic to check if name is already set and skip the modal if it is\n4. Send name update event to the backend when name is set\n5. Add option to skip name entry\n\nExample implementation:\n```typescript\n// localStorage.ts\nimport { nanoid } from 'nanoid';\n\nconst USER_ID_KEY = 'scrum-poker-user-id';\n\nexport function getUserId(): string {\n  let userId = localStorage.getItem(USER_ID_KEY);\n  \n  if (!userId) {\n    userId = nanoid();\n    localStorage.setItem(USER_ID_KEY, userId);\n  }\n  \n  return userId;\n}\n\n// NameModal.tsx\ninterface NameModalProps {\n  isOpen: boolean;\n  onSubmit: (name: string) => void;\n  onSkip: () => void;\n  roomUrl: string;\n}\n\nconst NameModal: React.FC<NameModalProps> = ({ isOpen, onSubmit, onSkip, roomUrl }) => {\n  const [name, setName] = useState('');\n  \n  const handleSubmit = (e: React.FormEvent) => {\n    e.preventDefault();\n    if (name.trim()) {\n      onSubmit(name.trim());\n    }\n  };\n  \n  const copyRoomUrl = () => {\n    navigator.clipboard.writeText(roomUrl);\n  };\n  \n  if (!isOpen) return null;\n  \n  return (\n    <div className=\"modal-overlay\">\n      <div className=\"modal\">\n        <h2>Enter Your Name</h2>\n        \n        <div className=\"room-url-container\">\n          <p>Room URL:</p>\n          <div className=\"url-copy\">\n            <input type=\"text\" readOnly value={roomUrl} />\n            <button onClick={copyRoomUrl}>Copy</button>\n          </div>\n        </div>\n        \n        <form onSubmit={handleSubmit}>\n          <input\n            type=\"text\"\n            value={name}\n            onChange={(e) => setName(e.target.value)}\n            placeholder=\"Your name\"\n            autoFocus\n          />\n          <div className=\"modal-actions\">\n            <button type=\"submit\" disabled={!name.trim()}>Join</button>\n            <button type=\"button\" onClick={onSkip}>Skip</button>\n          </div>\n        </form>\n      </div>\n    </div>\n  );\n};\n\n// Usage in RoomPage.tsx\nconst RoomPage: React.FC = () => {\n  const { roomId } = useParams<{ roomId: string }>();\n  const userId = getUserId();\n  const { connected, roomState, selectCard, setName, toggleCards, resetRoom } = useWebSocket(roomId, userId);\n  const [showNameModal, setShowNameModal] = useState(true);\n  \n  const hasSetName = roomState.participants[userId]?.name && roomState.participants[userId].name !== userId;\n  \n  useEffect(() => {\n    if (connected && hasSetName) {\n      setShowNameModal(false);\n    }\n  }, [connected, hasSetName]);\n  \n  const handleNameSubmit = (name: string) => {\n    setName(name);\n    setShowNameModal(false);\n  };\n  \n  const handleSkipName = () => {\n    setShowNameModal(false);\n  };\n  \n  const roomUrl = window.location.href;\n  \n  return (\n    <div className=\"room-page\">\n      <NameModal\n        isOpen={showNameModal && connected}\n        onSubmit={handleNameSubmit}\n        onSkip={handleSkipName}\n        roomUrl={roomUrl}\n      />\n      \n      {/* Rest of the room UI */}\n    </div>\n  );\n};\n```",
+      "testStrategy": "Test localStorage functionality to ensure userId persistence works correctly. Write component tests for the name modal to verify form submission and validation. Test that the modal is shown or skipped based on whether the user has already set their name.",
+      "priority": "medium",
+      "dependencies": [
+        4,
+        5
+      ],
+      "status": "pending",
+      "subtasks": [
+        {
+          "id": 1,
+          "title": "Create localStorage utilities for user identification",
+          "description": "Develop utility functions to handle user identification persistence using localStorage, including generating and retrieving unique user IDs and storing user names.",
+          "dependencies": [],
+          "details": "Create a `userStorage.js` utility file with functions: generateUserId() to create a UUID if none exists, getUserId() to retrieve the stored ID, setUserName(name) to store the user's name, and getUserName() to retrieve it. Implement error handling for browser storage limitations. Use a consistent key naming convention like 'chat-app.userId' and 'chat-app.userName'. Add unit tests using Jest to verify storage/retrieval functionality and proper error handling when localStorage is unavailable.",
+          "status": "pending"
+        },
+        {
+          "id": 2,
+          "title": "Implement the NameModal component with form validation",
+          "description": "Create a modal component that prompts users to enter their name with proper validation and styling.",
+          "dependencies": [
+            1
+          ],
+          "details": "Build a React NameModal component with a form input for the user's name. Implement validation to ensure names are between 2-20 characters and contain no special characters. Use React state to manage form data and validation errors. Style the modal to appear centered with a backdrop overlay. Include a submit button that is disabled until validation passes. Write unit tests with React Testing Library to verify validation logic, form submission behavior, and proper rendering of error messages. Ensure the modal is accessible with proper aria attributes and keyboard navigation.",
+          "status": "pending"
+        },
+        {
+          "id": 3,
+          "title": "Integrate user identification with the room page and WebSocket connection",
+          "description": "Connect the user identification system with the chat room functionality and ensure user information is included in WebSocket communications.",
+          "dependencies": [
+            1,
+            2
+          ],
+          "details": "Modify the room page component to check for existing user identification on load. If no name exists, display the NameModal. Update the WebSocket connection logic to include user ID and name in the connection and message payloads. Implement a context provider (UserContext) to make user information available throughout the application. Add logic to persist the user's name when set through the modal. Create integration tests to verify the complete flow: checking for existing user, displaying modal if needed, setting name, and establishing WebSocket connection with user details.",
+          "status": "pending"
+        }
+      ]
+    },
+    {
+      "id": 7,
+      "title": "Implement Homepage with Room Creation",
+      "description": "Create the homepage with room creation button and room joining functionality",
+      "details": "1. Create a HomePage component with a hero section\n2. Add a prominent button to create a new room\n3. Implement room creation logic using nanoid\n4. Add a top banner with input field for joining existing rooms\n5. Implement navigation to room page\n\nExample implementation:\n```tsx\n// HomePage.tsx\nimport { useState } from 'react';\nimport { useNavigate } from 'react-router-dom';\nimport { nanoid } from 'nanoid';\n\nconst HomePage: React.FC = () => {\n  const navigate = useNavigate();\n  const [joinRoomId, setJoinRoomId] = useState('');\n  \n  const createRoom = () => {\n    const roomId = nanoid();\n    navigate(`/room/${roomId}`);\n  };\n  \n  const joinRoom = (e: React.FormEvent) => {\n    e.preventDefault();\n    if (joinRoomId.trim()) {\n      navigate(`/room/${joinRoomId.trim()}`);\n    }\n  };\n  \n  return (\n    <div className=\"home-page\">\n      <header className=\"top-banner\">\n        <div className=\"logo\">Scrum Poker</div>\n        <form onSubmit={joinRoom} className=\"join-room-form\">\n          <input\n            type=\"text\"\n            value={joinRoomId}\n            onChange={(e) => setJoinRoomId(e.target.value)}\n            placeholder=\"Enter room ID\"\n          />\n          <button type=\"submit\" disabled={!joinRoomId.trim()}>Join Room</button>\n        </form>\n      </header>\n      \n      <section className=\"hero\">\n        <h1>Collaborative Story Point Estimation</h1>\n        <p>Create a room to start estimating story points with your team</p>\n        <button className=\"create-room-button\" onClick={createRoom}>\n          Create Room\n        </button>\n      </section>\n      \n      <section className=\"features\">\n        <h2>Features</h2>\n        <ul>\n          <li>Real-time collaboration</li>\n          <li>Simple and intuitive interface</li>\n          <li>No account required</li>\n          <li>Works on any device</li>\n        </ul>\n      </section>\n    </div>\n  );\n};\n```",
+      "testStrategy": "Write component tests for the homepage to verify room creation and joining functionality. Test that the create room button generates a valid roomId and navigates to the room page. Test that the join room form validates input and navigates to the correct room.",
+      "priority": "medium",
+      "dependencies": [
+        2
+      ],
+      "status": "pending",
+      "subtasks": [
+        {
+          "id": 1,
+          "title": "Create HomePage Component with Hero Section",
+          "description": "Develop the HomePage component with a hero section, navigation elements, and responsive styling",
+          "dependencies": [],
+          "details": "Create a React component for the HomePage with: 1) Hero section with app title, tagline, and background image, 2) Navigation bar with logo and links, 3) Responsive layout that works on mobile and desktop, 4) CSS modules or styled-components for styling with a consistent color scheme, 5) Basic animations for element transitions",
+          "status": "pending"
+        },
+        {
+          "id": 2,
+          "title": "Implement Room Creation Functionality",
+          "description": "Add the ability to create a new room with a form and navigation to the created room",
+          "dependencies": [
+            1
+          ],
+          "details": "Implement room creation with: 1) Form component with fields for room name and optional settings, 2) Form validation for required fields, 3) Create room button with loading state, 4) API integration to create room in backend, 5) Navigation logic to redirect to the newly created room, 6) Error handling for failed room creation",
+          "status": "pending"
+        },
+        {
+          "id": 3,
+          "title": "Add Room Joining Form with Validation",
+          "description": "Create a form that allows users to join existing rooms with input validation",
+          "dependencies": [
+            1
+          ],
+          "details": "Develop room joining functionality with: 1) Input field for room code/ID, 2) Validation to ensure room code format is correct, 3) Join room button with loading state, 4) API integration to verify room exists, 5) Navigation to the joined room upon success, 6) Error handling for invalid room codes or non-existent rooms, 7) Optional 'recently joined rooms' section",
+          "status": "pending"
+        }
+      ]
+    },
+    {
+      "id": 8,
+      "title": "Implement Card Reveal and Auto-Reveal Logic",
+      "description": "Implement the functionality to show/hide cards and automatically reveal cards when all participants have selected",
+      "details": "1. Update the DurableObject to handle toggle_cards events\n2. Implement logic to check if all named participants have selected a card\n3. Add auto-reveal functionality when all participants have selected\n4. Update the frontend to handle card_status_changed events\n\nExample implementation for the DurableObject:\n```typescript\nasync handleEvent(event: WebSocketEvent, senderId: string) {\n  if (event.type === 'toggle_cards') {\n    this.state.card_status = event.value;\n    await this.ctx.storage.put('state', this.state);\n    this.broadcast({\n      type: 'card_status_changed',\n      value: this.state.card_status\n    });\n  } else if (event.type === 'select_card') {\n    if (!this.state.participants[senderId]) return;\n    \n    this.state.participants[senderId].selectedCard = event.cardValue;\n    await this.ctx.storage.put('state', this.state);\n    \n    this.broadcast({\n      type: 'participant_updated',\n      participant: this.state.participants[senderId]\n    });\n    \n    // Check if all named participants have selected a card\n    if (this.state.card_status === 'hidden') {\n      const namedParticipants = Object.values(this.state.participants)\n        .filter(p => p.name && p.name !== p.userId);\n      \n      const allSelected = namedParticipants.length > 0 && \n        namedParticipants.every(p => p.selectedCard);\n      \n      if (allSelected) {\n        this.state.card_status = 'revealed';\n        await this.ctx.storage.put('state', this.state);\n        this.broadcast({\n          type: 'card_status_changed',\n          value: 'revealed'\n        });\n      }\n    }\n  }\n  // Handle other event types...\n}\n```",
+      "testStrategy": "Write unit tests for the auto-reveal logic to verify that cards are revealed when all participants have selected. Test the toggle_cards event handling to ensure card_status is updated correctly. Test edge cases such as when there are no named participants.",
+      "priority": "medium",
+      "dependencies": [
+        3,
+        5
+      ],
+      "status": "pending",
+      "subtasks": [
+        {
+          "id": 1,
+          "title": "Implement toggle_cards event handling in DurableObject",
+          "description": "Create the backend logic to handle the toggle_cards event in the DurableObject, allowing participants to manually reveal or hide cards.",
+          "dependencies": [],
+          "details": "1. Add a new event handler for 'toggle_cards' in the DurableObject class\n2. Implement logic to update the state.cardsRevealed flag\n3. Add validation to ensure only the session owner can toggle cards\n4. Broadcast the updated state to all connected clients\n5. Add error handling for invalid requests\n6. Implement rate limiting to prevent abuse\n7. Add logging for debugging purposes\n8. Test with both valid and invalid requests\n9. Verify state persistence across connections",
+          "status": "pending"
+        },
+        {
+          "id": 2,
+          "title": "Add auto-reveal logic when all participants have selected cards",
+          "description": "Implement automatic card reveal functionality that triggers when all active participants have selected a card value.",
+          "dependencies": [
+            1
+          ],
+          "details": "1. Create a helper function to check if all active participants have selected cards\n2. Modify the 'select_card' event handler to call this check after card selection\n3. If all participants have selected, automatically set state.cardsRevealed to true\n4. Add a configurable delay before auto-revealing (optional feature)\n5. Ensure the auto-reveal doesn't conflict with manual toggles\n6. Handle edge cases like participants joining/leaving during voting\n7. Add a configuration option to enable/disable auto-reveal\n8. Test with various participant counts and timing scenarios\n9. Verify the behavior when participants change their votes",
+          "status": "pending"
+        },
+        {
+          "id": 3,
+          "title": "Update frontend to handle card status changes",
+          "description": "Enhance the frontend to properly display and animate card reveals, and to provide UI controls for toggling card visibility.",
+          "dependencies": [
+            1,
+            2
+          ],
+          "details": "1. Add a reveal/hide cards button for the session owner\n2. Implement card flip animations when cards are revealed/hidden\n3. Update the card component to show either the back or the selected value\n4. Add visual indicators when cards are about to be revealed automatically\n5. Ensure accessibility of the card reveal UI elements\n6. Handle WebSocket events for card reveal state changes\n7. Add loading states during reveal/hide operations\n8. Test across different browsers and devices\n9. Implement error handling for failed reveal/hide operations\n10. Add unit and integration tests for the card reveal components",
+          "status": "pending"
+        }
+      ]
+    },
+    {
+      "id": 9,
+      "title": "Implement Reset Functionality with Confirmation",
+      "description": "Add the ability to reset the room state with a confirmation dialog",
+      "details": "1. Create a confirmation modal component\n2. Add reset button to the room UI\n3. Show confirmation dialog when reset is clicked and cards are selected\n4. Implement reset logic in the DurableObject\n5. Update the frontend to handle reset events\n\nExample implementation:\n```tsx\n// ConfirmationModal.tsx\ninterface ConfirmationModalProps {\n  isOpen: boolean;\n  message: string;\n  onConfirm: () => void;\n  onCancel: () => void;\n}\n\nconst ConfirmationModal: React.FC<ConfirmationModalProps> = ({ isOpen, message, onConfirm, onCancel }) => {\n  if (!isOpen) return null;\n  \n  return (\n    <div className=\"modal-overlay\">\n      <div className=\"modal confirmation-modal\">\n        <p>{message}</p>\n        <div className=\"modal-actions\">\n          <button onClick={onConfirm}>Yes, Reset</button>\n          <button onClick={onCancel}>Cancel</button>\n        </div>\n      </div>\n    </div>\n  );\n};\n\n// Usage in RoomPage.tsx\nconst RoomPage: React.FC = () => {\n  // ... other state and hooks\n  const [showResetConfirmation, setShowResetConfirmation] = useState(false);\n  \n  const handleResetClick = () => {\n    const anyCardsSelected = Object.values(roomState.participants).some(p => p.selectedCard);\n    const cardsHidden = roomState.card_status === 'hidden';\n    \n    if (anyCardsSelected && cardsHidden) {\n      setShowResetConfirmation(true);\n    } else {\n      resetRoom();\n    }\n  };\n  \n  const confirmReset = () => {\n    resetRoom();\n    setShowResetConfirmation(false);\n  };\n  \n  const cancelReset = () => {\n    setShowResetConfirmation(false);\n  };\n  \n  return (\n    <div className=\"room-page\">\n      {/* ... other components */}\n      \n      <div className=\"controls\">\n        <button onClick={toggleCards}>\n          {roomState.card_status === 'hidden' ? 'Show Cards' : 'Hide Cards'}\n        </button>\n        <button onClick={handleResetClick}>Reset</button>\n      </div>\n      \n      <ConfirmationModal\n        isOpen={showResetConfirmation}\n        message=\"Are you sure you want to reset all story point estimations?\"\n        onConfirm={confirmReset}\n        onCancel={cancelReset}\n      />\n    </div>\n  );\n};\n\n// DurableObject implementation\nasync handleEvent(event: WebSocketEvent, senderId: string) {\n  // ... other event handlers\n  \n  if (event.type === 'reset') {\n    // Reset card selections\n    for (const userId in this.state.participants) {\n      if (this.state.participants[userId].selectedCard) {\n        this.state.participants[userId].selectedCard = undefined;\n      }\n    }\n    \n    // Reset card status\n    this.state.card_status = 'hidden';\n    \n    await this.ctx.storage.put('state', this.state);\n    \n    // Send full state to all clients\n    this.broadcast({\n      type: 'state_sync',\n      state: this.state\n    });\n  }\n}\n```",
+      "testStrategy": "Write component tests for the confirmation modal to verify it shows and hides correctly. Test the reset logic in the DurableObject to ensure it correctly resets the state. Test that the confirmation dialog is shown only when necessary.",
+      "priority": "medium",
+      "dependencies": [
+        3,
+        5
+      ],
+      "status": "pending",
+      "subtasks": [
+        {
+          "id": 1,
+          "title": "Create the ConfirmationModal component",
+          "description": "Develop a reusable confirmation modal component that can be used for confirming reset actions",
+          "dependencies": [],
+          "details": "1. Create a new React component called ConfirmationModal that accepts props for title, message, confirmButtonText, cancelButtonText, onConfirm, and onCancel functions.\n2. Implement styling using the application's design system (CSS modules or styled-components).\n3. Add animations for modal appearance/disappearance.\n4. Ensure the modal is accessible with proper ARIA attributes and keyboard navigation.\n5. Implement click-outside-to-dismiss functionality.\n6. Add unit tests using Jest and React Testing Library to verify the component renders correctly and handles user interactions properly.",
+          "status": "pending"
+        },
+        {
+          "id": 2,
+          "title": "Implement reset logic in the DurableObject",
+          "description": "Create backend functionality to reset a room's state in the DurableObject",
+          "dependencies": [],
+          "details": "1. Add a new method to the DurableObject class called 'resetRoom'.\n2. Implement logic to reset all room state variables to their initial values.\n3. Create a new WebSocket message type for reset requests.\n4. Add authentication/authorization checks to ensure only authorized users can reset a room.\n5. Broadcast a notification to all connected clients when a room is reset.\n6. Implement error handling for failed reset attempts.\n7. Write unit tests to verify the reset functionality works correctly and maintains data integrity.",
+          "status": "pending"
+        },
+        {
+          "id": 3,
+          "title": "Integrate reset functionality with the room UI",
+          "description": "Connect the ConfirmationModal and reset logic to the room interface",
+          "dependencies": [
+            1,
+            2
+          ],
+          "details": "1. Add a reset button to the room UI in an appropriate location.\n2. Implement state management to control the visibility of the confirmation modal.\n3. Connect the reset button click handler to show the confirmation modal.\n4. Wire up the confirmation modal's onConfirm handler to call the backend reset API.\n5. Handle the reset response from the server and update the UI accordingly.\n6. Add loading states during the reset process.\n7. Implement error handling for failed reset attempts with user feedback.\n8. Write integration tests to verify the end-to-end reset functionality works correctly.",
+          "status": "pending"
+        }
+      ]
+    },
+    {
+      "id": 10,
+      "title": "Implement Styling and Animations",
+      "description": "Style the application with card-like UI elements and add animations for card selection and reveal",
+      "details": "1. Create CSS styles for story point cards to look like playing cards\n2. Add animations for card selection\n3. Add animations for card reveal/hide\n4. Style the participants table\n5. Style the modals and buttons\n6. Ensure responsive design for mobile devices\n\nExample CSS:\n```css\n/* Card styling */\n.card {\n  width: 80px;\n  height: 120px;\n  border-radius: 8px;\n  background-color: white;\n  border: 1px solid #ccc;\n  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);\n  display: flex;\n  justify-content: center;\n  align-items: center;\n  font-size: 24px;\n  font-weight: bold;\n  margin: 0 8px;\n  cursor: pointer;\n  transition: transform 0.2s, box-shadow 0.2s;\n}\n\n.card:hover {\n  transform: translateY(-5px);\n  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);\n}\n\n.card.selected {\n  border-color: #4caf50;\n  background-color: #e8f5e9;\n  transform: translateY(-10px);\n  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);\n}\n\n/* Card in table */\n.participants-table .card {\n  width: 40px;\n  height: 60px;\n  font-size: 16px;\n  margin: 0;\n}\n\n.participants-table .card.hidden {\n  background-color: #2196f3;\n  color: white;\n}\n\n/* Card reveal animation */\n@keyframes flip {\n  0% { transform: rotateY(0deg); }\n  50% { transform: rotateY(90deg); }\n  100% { transform: rotateY(0deg); }\n}\n\n.participants-table .card.revealed {\n  animation: flip 0.5s;\n}\n\n/* Responsive design */\n@media (max-width: 768px) {\n  .card-selection {\n    flex-wrap: wrap;\n    justify-content: center;\n  }\n  \n  .card {\n    margin: 8px;\n  }\n}\n```\n\nImplement animations using CSS transitions and keyframes. For more complex animations, consider using libraries like Framer Motion or React Spring.",
+      "testStrategy": "Perform visual testing to ensure styles are applied correctly across different browsers and devices. Test animations to ensure they work smoothly and don't cause performance issues. Test responsive design by resizing the browser window and using device emulation.",
+      "priority": "low",
+      "dependencies": [
+        4,
+        7
+      ],
+      "status": "pending",
+      "subtasks": [
+        {
+          "id": 1,
+          "title": "Create card styling and animations",
+          "description": "Implement styling and animations for all card components in the application",
+          "dependencies": [],
+          "details": "- Design card components with rounded corners (8px radius), subtle shadows (0 2px 4px rgba(0,0,0,0.1)), and consistent padding (16px)\n- Implement hover animations with scale transform (transform: scale(1.02)) and shadow enhancement\n- Create card entry/exit animations using CSS transitions or keyframes (opacity and transform properties)\n- Establish a consistent color scheme for different card states (default, hover, active, disabled)\n- Ensure card content is properly aligned and spaced with flexbox or grid layouts\n- Add subtle border or accent colors to differentiate card types\n- Implement loading state animations for cards with skeleton loaders",
+          "status": "pending"
+        },
+        {
+          "id": 2,
+          "title": "Style the participants table and room controls",
+          "description": "Create styling for the participants table and all room control elements",
+          "dependencies": [
+            1
+          ],
+          "details": "- Design a clean, scannable participants table with alternating row colors (rgba(0,0,0,0.02) for even rows)\n- Style table headers with proper emphasis (font-weight: 600, slightly larger font-size)\n- Implement hover effects for interactive table rows\n- Create consistent styling for room control buttons (size, padding, border-radius)\n- Design status indicators for participants (online/offline/speaking) using colored dots or icons\n- Implement tooltip styles for additional information on hover\n- Ensure proper spacing between control elements (margin: 12px)\n- Style pagination controls for the participants table\n- Create animations for state changes in room controls (enabled/disabled transitions)",
+          "status": "pending"
+        },
+        {
+          "id": 3,
+          "title": "Implement modal styling and animations",
+          "description": "Create styling and animations for all modal dialogs in the application",
+          "dependencies": [
+            1
+          ],
+          "details": "- Design modal containers with proper z-index, backdrop blur (backdrop-filter: blur(4px)), and centered positioning\n- Implement modal entry animations (fade-in and slide-up or scale)\n- Create exit animations for modals with proper timing (300-500ms duration)\n- Style modal headers, content areas, and footer sections consistently\n- Design form elements within modals (inputs, selectors, checkboxes) with consistent styling\n- Implement focus states and keyboard navigation indicators\n- Create proper spacing between modal elements (16px vertical spacing between sections)\n- Style modal close buttons and action buttons with hover/active states\n- Ensure modals have proper max-width and height constraints with scrolling for overflow content",
+          "status": "pending"
+        },
+        {
+          "id": 4,
+          "title": "Ensure responsive design for all device sizes",
+          "description": "Implement responsive styling to ensure the application works well on all device sizes",
+          "dependencies": [
+            1,
+            2,
+            3
+          ],
+          "details": "- Create media queries for key breakpoints (mobile: 320-480px, tablet: 481-768px, desktop: 769px+)\n- Implement fluid typography using clamp() or calc() for responsive font sizing\n- Design mobile-first layouts that adapt to larger screens\n- Create collapsible/expandable components for mobile views\n- Ensure touch targets are appropriately sized (minimum 44x44px) for mobile users\n- Test and adjust all animations for performance on mobile devices\n- Implement responsive tables that convert to cards or vertical layouts on small screens\n- Ensure modals are properly sized and scrollable on mobile devices\n- Create responsive navigation patterns (hamburger menu for mobile)\n- Test and fix any overflow issues across different viewport sizes",
+          "status": "pending"
+        }
+      ]
+    }
+  ]
+}
