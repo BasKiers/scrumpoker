@@ -1,12 +1,10 @@
-import { useEffect, useCallback, useRef } from 'react';
+import { useCallback, useEffect, useRef } from 'react';
 import type { WebSocketEvent, WebSocketResponse } from 'shared-types';
 
 interface UseWebSocketOptions {
 	roomId: string;
 	userId: string;
 	name?: string;
-	maxReconnectAttempts?: number;
-	reconnectInterval?: number;
 	onConnect?: () => void;
 	onDisconnect?: () => void;
 	onMessage?: (data: WebSocketResponse) => void;
@@ -16,100 +14,127 @@ interface UseWebSocketOptions {
 export function useWebSocket({
 	roomId,
 	userId,
-	name,
-	maxReconnectAttempts = 5,
-	reconnectInterval = 2000,
 	onConnect,
 	onDisconnect,
 	onMessage,
 	onError,
 }: UseWebSocketOptions) {
+	const socketRef = useRef<WebSocket | null>(null);
 	const reconnectAttempts = useRef<number>(0);
 	const reconnectTimeout = useRef<number | undefined>(undefined);
-	const socketRef = useRef<WebSocket | null>(null);
+	const connectionRef = useRef<{ roomId: string; userId: string } | null>(null);
+	const callbacksRef = useRef<{
+		onConnect?: () => void;
+		onDisconnect?: () => void;
+		onMessage?: (data: WebSocketResponse) => void;
+		onError?: (error: string) => void;
+	}>({});
+
+	// Update callbacks ref when they change
+	useEffect(() => {
+		callbacksRef.current = { onConnect, onDisconnect, onMessage, onError };
+	}, [onConnect, onDisconnect, onMessage, onError]);
 
 	const connect = useCallback(() => {
+		// Don't create a new connection if we already have one for this room/user
+		if (connectionRef.current?.roomId === roomId && connectionRef.current?.userId === userId) {
+			return;
+		}
+
+		// Clean up any existing connection
+		if (socketRef.current) {
+			socketRef.current.close();
+			socketRef.current = null;
+		}
+
 		const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-		const host = window.location.host;
-		const url = `${protocol}//${host}/room/${roomId}/websocket?userId=${userId}`;
+		const wsUrl = `${protocol}//localhost:8787/room/${roomId}/websocket?userId=${userId}`;
 
-		const ws = new WebSocket(url);
-		socketRef.current = ws;
+		try {
+			const socket = new WebSocket(wsUrl);
+			socketRef.current = socket;
+			connectionRef.current = { roomId, userId };
 
-		ws.addEventListener('open', () => {
-			reconnectAttempts.current = 0;
-			onConnect?.();
+			socket.onopen = () => {
 
-			// Send initial connect event
-			if (name) {
-				ws.send(
-					JSON.stringify({
-						type: 'connect',
-						userId,
-						name,
-					} as WebSocketEvent),
-				);
-			}
-		});
+                console.log('OPEN!')
+				if (socketRef.current !== socket) {
+					return;
+                }
+                
+				reconnectAttempts.current = 0;
+				callbacksRef.current.onConnect?.();
+			};
 
-		ws.addEventListener('message', (event) => {
-			try {
-				const data = JSON.parse(event.data) as WebSocketResponse;
-				onMessage?.(data);
-			} catch (error) {
-				onError?.(error instanceof Error ? error.message : 'Failed to parse WebSocket message');
-			}
-		});
+			socket.onclose = () => {
+				if (socketRef.current !== socket) {
+					return;
+                }
 
-		ws.addEventListener('close', (event) => {
-			onDisconnect?.();
+				callbacksRef.current.onDisconnect?.();
+                socketRef.current = null;
+                if (reconnectAttempts.current < 5) {
+                    reconnectTimeout.current = window.setTimeout(() => {
+                        reconnectAttempts.current++;
+                        connect();
+                    }, Math.min(1000 * Math.pow(2, reconnectAttempts.current), 10000));
+                }
+			};
 
-			// Only attempt to reconnect if the connection was closed unexpectedly
-			// and we haven't exceeded the maximum number of attempts
-			if (event.code !== 1000 && reconnectAttempts.current < maxReconnectAttempts) {
-				reconnectAttempts.current += 1;
-				const delay = reconnectInterval * Math.pow(2, reconnectAttempts.current - 1); // Exponential backoff
-				reconnectTimeout.current = window.setTimeout(connect, delay);
-			} else if (reconnectAttempts.current >= maxReconnectAttempts) {
-				onError?.('Maximum reconnection attempts reached. Please refresh the page.');
-			}
-		});
+			socket.onmessage = (event) => {
+				if (socketRef.current !== socket) {
+					return;
+                }
 
-		ws.addEventListener('error', () => {
-			onError?.('WebSocket connection error. Attempting to reconnect...');
-			ws.close();
-		});
+				try {
+					const data = JSON.parse(event.data) as WebSocketResponse;
+					callbacksRef.current.onMessage?.(data);
+				} catch (error) {
+					callbacksRef.current.onError?.(error instanceof Error ? error.message : 'Failed to parse message');
+				}
+			};
 
-		return ws;
-	}, [roomId, userId, name, maxReconnectAttempts, reconnectInterval, onConnect, onDisconnect, onMessage, onError]);
+			socket.onerror = (error) => {
+				if (socketRef.current !== socket) {
+					return;
+                }
+                
+				callbacksRef.current.onError?.(error instanceof Error ? error.message : 'WebSocket error occurred');
+			};
+		} catch (error) {
+			callbacksRef.current.onError?.(error instanceof Error ? error.message : 'Failed to create WebSocket connection');
+		}
+	}, [roomId, userId]);
 
+	// Cleanup function
+	const cleanup = useCallback(() => {
+		if (reconnectTimeout.current) {
+			window.clearTimeout(reconnectTimeout.current);
+			reconnectTimeout.current = undefined;
+		}
+		if (socketRef.current) {
+			socketRef.current.close();
+			socketRef.current = null;
+		}
+		connectionRef.current = null;
+	}, []);
+
+	// Connect on mount and when roomId or userId changes
 	useEffect(() => {
-		const ws = connect();
-
-		return () => {
-			if (reconnectTimeout.current) {
-				window.clearTimeout(reconnectTimeout.current);
-			}
-			ws.close();
-		};
-	}, [connect]);
+		cleanup();
+		connect();
+	}, [connect, cleanup]);
 
 	const sendEvent = useCallback(
 		(event: WebSocketEvent) => {
 			if (socketRef.current?.readyState === WebSocket.OPEN) {
-				try {
-					socketRef.current.send(JSON.stringify(event));
-				} catch (error) {
-					onError?.(error instanceof Error ? error.message : 'Failed to send WebSocket message');
-				}
+				socketRef.current.send(JSON.stringify(event));
 			} else {
-				onError?.('Cannot send message: WebSocket is not connected');
+				callbacksRef.current.onError?.('WebSocket is not connected');
 			}
 		},
-		[onError],
+		[],
 	);
 
-	return {
-		sendEvent,
-	};
+	return { sendEvent };
 } 

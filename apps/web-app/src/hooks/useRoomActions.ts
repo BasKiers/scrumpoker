@@ -16,9 +16,7 @@ interface UseRoomActionsOptions {
 }
 
 export function useRoomActions({ roomId, userId, name }: UseRoomActionsOptions) {
-  const { setConnected, setError, updateRoomState } = useRoomStore();
-  const cardStatus = useRoomStore((state) => state.card_status);
-  const { toggleCardStatus, resetRoom } = useRoomStore();
+  const { setConnected, setError, updateRoomState, card_status: cardStatus, toggleCardStatus, resetRoom } = useRoomStore();
 
   const { sendEvent } = useWebSocket({
     roomId,
