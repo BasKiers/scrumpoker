@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Reorder } from 'framer-motion';
+import { Reorder, motion } from 'framer-motion';
 import type { Participant } from 'shared-types';
 
 interface ParticipantsTableProps {
@@ -13,18 +13,29 @@ const ParticipantsTable: React.FC<ParticipantsTableProps> = ({
   cardsRevealed,
   currentUserId,
 }) => {
-  const [flipping, setFlipping] = useState(false);
   const [sortedParticipants, setSortedParticipants] = useState<Participant[]>([]);
+  const [mostFrequentCard, setMostFrequentCard] = useState<string | null>(null);
 
   useEffect(() => {
-    if (cardsRevealed) {
-      setFlipping(true);
-      const timer = setTimeout(() => {
-        setFlipping(false);
-      }, 200);
-      return () => clearTimeout(timer);
-    }
-  }, [cardsRevealed]);
+    const cardCounts: Record<string, number> = {};
+    Object.values(participants).forEach(participant => {
+      if (participant.selectedCard) {
+        cardCounts[participant.selectedCard] = (cardCounts[participant.selectedCard] || 0) + 1;
+      }
+    });
+
+    let maxCount = 0;
+    let mostFrequent: string | null = null;
+
+    Object.entries(cardCounts).forEach(([card, count]) => {
+      if (count > maxCount || (count === maxCount && parseInt(card) > parseInt(mostFrequent || '0'))) {
+        maxCount = count;
+        mostFrequent = card;
+      }
+    });
+
+    setMostFrequentCard(mostFrequent);
+  }, [participants]);
 
   useEffect(() => {
     const sorted = Object.values(participants).sort((a, b) => {
@@ -79,7 +90,7 @@ const ParticipantsTable: React.FC<ParticipantsTableProps> = ({
               className={`${participant.userId === currentUserId ? 'bg-blue-50' : ''}`}
               as='tr'
               drag={false}
-              transition={{ delay: 0.2 }}
+              transition={{ delay: 0.25 }}
             >
               <td className="px-6 py-4 whitespace-nowrap">
                 <div className="flex items-center">
@@ -108,11 +119,20 @@ const ParticipantsTable: React.FC<ParticipantsTableProps> = ({
               </td>
               <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                 {participant.selectedCard ? (
-                  <div className={`w-8 h-12 rounded border-2 flex items-center justify-center transition-transform duration-200 ease-in-out ${
-                    flipping ? 'transform rotate-y-90' : ''
-                  } ${(cardsRevealed && flipping) || (!cardsRevealed && !flipping) ? 'bg-gray-100 border-gray-300' : 'bg-white border-blue-500' }`}>
-                    {(cardsRevealed && flipping) || (!cardsRevealed && !flipping) ? '?' : participant.selectedCard}
-                  </div>
+                  <motion.div
+                    className="w-8 h-12 rounded border-2 flex items-center justify-center border-gray-500"
+                    initial={{ rotateY: 180 }}
+                    animate={{
+                      rotateY: cardsRevealed ? 0 : 180,
+                      borderColor: cardsRevealed ? participant.selectedCard === mostFrequentCard ? 'oklch(0.623 0.214 259.815)' : 'oklch(70.7% 0.022 261.325)' : 'oklch(0.92 0.004 286.32)',
+                    }}
+                    transition={{ duration: 0.3 }}
+                    onUpdate={(latest: { rotateY: number }) => {
+                      console.log(latest);
+                    }}
+                  >
+                    {!cardsRevealed ? '?' : participant.selectedCard}
+                  </motion.div>
                 ) : (
                   <span className="text-gray-400">-</span>
                 )}

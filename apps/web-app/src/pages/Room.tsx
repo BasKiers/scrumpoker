@@ -21,7 +21,7 @@ const MOCK_PARTICIPANTS: Record<string, Participant> = {
   'user-3': {
     userId: 'user-3',
     name: 'Carol Williams',
-    selectedCard: '3'
+    selectedCard: '5'
   },
   'user-4': {
     userId: 'user-4',
