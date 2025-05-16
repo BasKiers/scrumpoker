@@ -8,6 +8,7 @@ import { Button } from '../components/ui/button';
 import { Alert, AlertDescription } from '../components/ui/alert';
 import { useUser } from '@/contexts/UserContext';
 import NameModal from '../components/NameModal';
+import { ConfirmationModal } from '../components/ConfirmationModal';
 
 const STORY_POINTS = ['?', '1', '2', '3', '5', '8', '13', '20'];
 
@@ -15,6 +16,7 @@ const Room: React.FC = () => {
   const { roomId } = useParams<{ roomId: string }>();
   const { userId, name, setName, clearName } = useUser();
   const [showNameModal, setShowNameModal] = React.useState<'joining' | 'done' | 're-enter'>('done');
+  const [showResetConfirmation, setShowResetConfirmation] = React.useState(false);
 
   const { selectCard, toggleCards, reset, setName: setRoomName } = useRoomActions({
     roomId: roomId || 'default',
@@ -49,7 +51,21 @@ const Room: React.FC = () => {
   };
 
   const handleReset = () => {
+    const hasSelectedCards = Object.values(activeParticipants).some(p => p.selectedCard);
+    if (card_status !== 'revealed' && hasSelectedCards) {
+      setShowResetConfirmation(true);
+    } else {
+      reset();
+    }
+  };
+
+  const handleResetConfirm = () => {
     reset();
+    setShowResetConfirmation(false);
+  };
+
+  const handleResetCancel = () => {
+    setShowResetConfirmation(false);
   };
 
   const handleNameSubmit = (newName: string) => {
@@ -143,6 +159,13 @@ const Room: React.FC = () => {
         onSubmit={handleNameSubmit}
         onSkip={handleNameSkip}
         roomUrl={window.location.href}
+      />
+
+      <ConfirmationModal
+        isOpen={showResetConfirmation}
+        message="Are you sure you want to reset all story point estimations?"
+        onConfirm={handleResetConfirm}
+        onCancel={handleResetCancel}
       />
     </div>
   );
