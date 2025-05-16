@@ -16,7 +16,7 @@ export const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
   onCancel,
 }) => {
   return (
-    <AnimatePresence>
+    <AnimatePresence mode="wait">
       {isOpen && (
         <motion.div
           className="modal-overlay"
@@ -28,10 +28,10 @@ export const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
         >
           <motion.div
             className="modal confirmation-modal"
-            initial={{ opacity: 0, y: 20 }}
+            initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 20 }}
-            transition={{ duration: 0.3 }}
+            transition={{ duration: 0.3, type: "spring", damping: 25, stiffness: 300 }}
             onClick={e => e.stopPropagation()}
           >
             <motion.p
