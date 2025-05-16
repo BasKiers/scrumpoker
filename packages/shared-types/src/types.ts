@@ -115,7 +115,7 @@ export function updateParticipant(
 }
 
 // Response types
-export type WebSocketResponse = SuccessResponse | ErrorResponse | StateUpdateResponse;
+export type WebSocketResponse = SuccessResponse | ErrorResponse | StateUpdateResponse | StateSyncResponse;
 
 export interface SuccessResponse {
   type: 'success';
@@ -135,6 +135,11 @@ export interface StateUpdateResponse {
   state: RoomState;
 }
 
+export interface StateSyncResponse {
+  type: 'state_sync';
+  state: RoomState;
+}
+
 // Type guards for responses
 export function isSuccessResponse(response: WebSocketResponse): response is SuccessResponse {
   return response.type === 'success';
@@ -148,4 +153,8 @@ export function isStateUpdateResponse(
   response: WebSocketResponse,
 ): response is StateUpdateResponse {
   return response.type === 'state_update';
+}
+
+export function isStateSyncResponse(response: WebSocketResponse): response is StateSyncResponse {
+  return response.type === 'state_sync';
 }
