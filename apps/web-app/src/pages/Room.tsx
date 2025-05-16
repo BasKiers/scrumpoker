@@ -30,9 +30,9 @@ const Room: React.FC = () => {
     const currentParticipant = participants[currentUserId];
     console.log('checking', currentParticipant, currentParticipant?.name)
     if (currentParticipant?.name === undefined) {
-        setShowNameModal(true);
+      setShowNameModal(true);
     } else if(showNameModal) {
-        setShowNameModal(false);
+      setShowNameModal(false);
     }
   }, [currentUserId, isSynced, participants, showNameModal]);
 
@@ -58,6 +58,9 @@ const Room: React.FC = () => {
     setShowNameModal(false);
   };
 
+  const currentParticipant = participants[currentUserId];
+  const hasName = Boolean(currentParticipant?.name);
+
   return (
     <div className="room-page min-h-screen bg-gray-50">
       <header className="bg-white shadow">
@@ -79,7 +82,7 @@ const Room: React.FC = () => {
               <div className="px-4 py-5 sm:p-6">
                 <h2 className="text-lg font-medium text-gray-900 mb-4">Participants</h2>
                 <ParticipantsTable
-                  participants={Object.fromEntries(Object.entries(participants).filter(([, {name}]) => Boolean(name)))}
+                  participants={participants}
                   cardsRevealed={card_status === 'revealed'}
                   currentUserId={currentUserId}
                 />
@@ -89,7 +92,17 @@ const Room: React.FC = () => {
             {/* Voting Section */}
             <section className="bg-white overflow-hidden shadow rounded-lg">
               <div className="px-4 py-5 sm:p-6">
-                <h2 className="text-lg font-medium text-gray-900 mb-4">Voting</h2>
+                <div className="flex justify-between items-center mb-4">
+                  <h2 className="text-lg font-medium text-gray-900">Voting</h2>
+                  {!hasName && (
+                    <Button
+                      variant="default"
+                      onClick={() => setShowNameModal(true)}
+                    >
+                      Join Voting
+                    </Button>
+                  )}
+                </div>
                 <div className="flex flex-wrap gap-4 justify-center">
                   {STORY_POINTS.map((value) => (
                     <StoryPointCard
@@ -97,6 +110,7 @@ const Room: React.FC = () => {
                       value={value}
                       selected={participants[currentUserId]?.selectedCard === value}
                       onClick={() => handleCardSelect(value)}
+                      disabled={!hasName}
                     />
                   ))}
                 </div>
