@@ -93,9 +93,47 @@ export function useWebSocket({ roomId, userId, name, onError }: UseWebSocketOpti
 		[socket, connected],
 	);
 
+	const selectCard = useCallback(
+		(cardValue: string) => {
+			sendEvent({
+				type: 'select_card',
+				userId,
+				cardValue,
+			});
+		},
+		[sendEvent, userId],
+	);
+
+	const setName = useCallback(
+		(name: string) => {
+			sendEvent({
+				type: 'set_name',
+				userId,
+				name,
+			});
+		},
+		[sendEvent, userId],
+	);
+
+	const toggleCards = useCallback(() => {
+		sendEvent({
+			type: 'toggle_cards',
+			value: roomState.card_status === 'hidden' ? 'revealed' : 'hidden',
+		});
+	}, [sendEvent, roomState.card_status]);
+
+	const resetRoom = useCallback(() => {
+		sendEvent({
+			type: 'reset',
+		});
+	}, [sendEvent]);
+
 	return {
 		connected,
 		roomState,
-		sendEvent,
+		selectCard,
+		setName,
+		toggleCards,
+		resetRoom,
 	};
 } 
