@@ -90,27 +90,27 @@ const Room: React.FC = () => {
   };
 
   return (
-    <div className="room-page min-h-screen bg-gray-50">
-      <header className="bg-white shadow">
-        <div className="max-w-7xl mx-auto py-4 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-background">
+      <header className="border-b">
+        <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
               <Button
                 variant="ghost"
                 size="icon"
                 onClick={() => navigate('/')}
-                className="hover:bg-gray-100"
+                className="hover:bg-primary/10"
               >
                 <ArrowLeft className="h-5 w-5" />
               </Button>
               <div className="flex items-center gap-2">
-                <span className="text-sm text-gray-500">Room:</span>
-                <span className="text-sm font-medium text-gray-900">{roomId}</span>
+                <span className="text-sm text-muted-foreground">Room:</span>
+                <span className="text-sm font-medium">{roomId}</span>
                 <Button
                   variant="ghost"
                   size="icon"
                   onClick={handleCopyUrl}
-                  className="hover:bg-gray-100"
+                  className="hover:bg-primary/10"
                 >
                   <Copy className="h-4 w-4" />
                 </Button>
@@ -120,8 +120,8 @@ const Room: React.FC = () => {
         </div>
       </header>
 
-      <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
-        <div className="px-4 py-6 sm:px-0">
+      <main className="container mx-auto px-4 py-8">
+        <div className="max-w-5xl mx-auto">
           {error && (
             <Alert variant="destructive" className="mb-6">
               <AlertDescription>{error}</AlertDescription>
@@ -129,9 +129,9 @@ const Room: React.FC = () => {
           )}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {/* Participants Section */}
-            <section className="bg-white overflow-hidden shadow rounded-lg">
-              <div className="px-4 py-5 sm:p-6">
-                <h2 className="text-lg font-medium text-gray-900 mb-4">Participants</h2>
+            <section className="bg-card rounded-lg border shadow-sm">
+              <div className="p-6">
+                <h2 className="text-lg font-medium mb-4">Participants</h2>
                 <ParticipantsTable
                   participants={activeParticipants}
                   cardsRevealed={card_status === 'revealed'}
@@ -141,12 +141,12 @@ const Room: React.FC = () => {
             </section>
 
             {/* Voting Section */}
-            <section className="bg-white overflow-hidden shadow rounded-lg">
-              <div className="px-4 py-5 sm:p-6">
+            <section className="bg-card rounded-lg border shadow-sm">
+              <div className="p-6">
                 <div className="flex justify-between items-center mb-4">
-                  <h2 className="text-lg font-medium text-gray-900">Voting</h2>
+                  <h2 className="text-lg font-medium">Voting</h2>
                   <Button
-                    variant="default"
+                    variant="outline"
                     onClick={() => hasName ? handleNameSkip() : setShowNameModal('re-enter')}
                   >
                     {hasName ? 'Spectate Voting' : 'Join Voting'}
