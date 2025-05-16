@@ -51,7 +51,7 @@ const NameModal: React.FC<NameModalProps> = ({ isOpen, onSubmit, onSkip, roomUrl
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={() => {}}>
+    <Dialog open={isOpen} onOpenChange={(open) => {if(!open) {onSkip()}}}>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
           <DialogTitle>Enter Your Name</DialogTitle>

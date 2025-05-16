@@ -30,7 +30,7 @@ const Room: React.FC = () => {
     const currentParticipant = participants[currentUserId];
     if (currentParticipant?.name === undefined) {
       const lastKnownName = getLastKnownName();
-      if (lastKnownName) {
+      if (typeof lastKnownName === 'string') {
         setName(lastKnownName);
         setShowNameModal('done');
       } else {
@@ -101,7 +101,7 @@ const Room: React.FC = () => {
                   <h2 className="text-lg font-medium text-gray-900">Voting</h2>
                   <Button
                     variant="default"
-                    onClick={() => hasName ? handleNameSkip() : setShowNameModal('joining')}
+                    onClick={() => hasName ? handleNameSkip() : setShowNameModal('re-enter')}
                   >
                     {hasName ? 'Spectate Voting' : 'Join Voting'}
                   </Button>

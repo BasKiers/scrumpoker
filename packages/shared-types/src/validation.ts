@@ -3,6 +3,7 @@ import { z } from 'zod';
 // Base schema for all events
 export const baseEventSchema = z.object({
   type: z.string(),
+  eventId: z.string().optional(),
 });
 
 // Connect event schema
