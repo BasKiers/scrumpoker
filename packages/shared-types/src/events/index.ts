@@ -18,7 +18,7 @@ export function handleEvent(state: RoomState, event: WebSocketEvent): WebSocketR
   try {
     const newState = handler.handle(state, event);
     return {
-      type: 'state_update',
+      type: 'state_sync',
       state: newState,
     };
   } catch (error) {

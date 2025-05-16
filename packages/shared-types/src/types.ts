@@ -115,7 +115,7 @@ export function updateParticipant(
 }
 
 // Response types
-export type WebSocketResponse = SuccessResponse | ErrorResponse | StateUpdateResponse | StateSyncResponse;
+export type WebSocketResponse = SuccessResponse | ErrorResponse | StateSyncResponse | EventBroadcastResponse;
 
 export interface SuccessResponse {
   type: 'success';
@@ -130,14 +130,14 @@ export interface ErrorResponse {
   code?: string;
 }
 
-export interface StateUpdateResponse {
-  type: 'state_update';
-  state: RoomState;
-}
-
 export interface StateSyncResponse {
   type: 'state_sync';
   state: RoomState;
+}
+
+export interface EventBroadcastResponse {
+  type: 'event_broadcast';
+  message: WebSocketEvent;
 }
 
 // Type guards for responses
@@ -149,12 +149,10 @@ export function isErrorResponse(response: WebSocketResponse): response is ErrorR
   return response.type === 'error';
 }
 
-export function isStateUpdateResponse(
-  response: WebSocketResponse,
-): response is StateUpdateResponse {
-  return response.type === 'state_update';
-}
-
 export function isStateSyncResponse(response: WebSocketResponse): response is StateSyncResponse {
   return response.type === 'state_sync';
+}
+
+export function isEventBroadcastResponse(response: WebSocketResponse): response is EventBroadcastResponse {
+  return response.type === 'event_broadcast';
 }
