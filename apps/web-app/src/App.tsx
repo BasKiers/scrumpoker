@@ -1,25 +1,19 @@
-import React, { Suspense } from 'react';
-import { BrowserRouter, useRoutes, Link } from 'react-router-dom';
-import { routes } from './routes';
+import React from 'react';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import Home from './pages/Home';
+import Room from './pages/Room';
+import { UserProvider } from './contexts/UserContext';
 
-function AppRoutes() {
-  return useRoutes(routes);
-}
-
-interface AppProps {
-  Router?: typeof BrowserRouter;
-}
-
-const App: React.FC<AppProps> = ({ Router = BrowserRouter }) => {
+const App: React.FC = () => {
   return (
-    <Router>
-      <nav>
-        <Link to="/">Home</Link>
-      </nav>
-      <Suspense fallback={<div>Loading...</div>}>
-        <AppRoutes />
-      </Suspense>
-    </Router>
+    <UserProvider>
+      <Router>
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/room/:roomId" element={<Room />} />
+        </Routes>
+      </Router>
+    </UserProvider>
   );
 };
 
