@@ -1,0 +1,144 @@
+.participants-table {
+  @apply w-full bg-white rounded-lg shadow-sm overflow-hidden;
+}
+
+.participants-table table {
+  @apply min-w-full divide-y divide-gray-200;
+}
+
+.participants-table thead {
+  @apply bg-gray-50;
+}
+
+.participants-table th {
+  @apply px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider;
+}
+
+.participants-table tbody {
+  @apply bg-white divide-y divide-gray-200;
+}
+
+.participants-table tr {
+  @apply transition-colors duration-200;
+}
+
+.participants-table tr:hover {
+  @apply bg-gray-50;
+}
+
+.participants-table tr.current-user {
+  @apply bg-blue-50;
+}
+
+.participants-table td {
+  @apply px-6 py-4 whitespace-nowrap;
+}
+
+.participants-table .participant-avatar {
+  @apply h-10 w-10 rounded-full bg-gray-200 flex items-center justify-center transition-transform duration-200;
+}
+
+.participants-table tr:hover .participant-avatar {
+  @apply scale-105;
+}
+
+.participants-table .participant-name {
+  @apply text-sm font-medium text-gray-900;
+}
+
+.participants-table .status-badge {
+  @apply px-2 inline-flex text-xs leading-5 font-semibold rounded-full transition-colors duration-200;
+}
+
+.participants-table .status-badge.voted {
+  @apply bg-green-100 text-green-800;
+}
+
+.participants-table .status-badge.waiting {
+  @apply bg-gray-100 text-gray-800;
+}
+
+.participants-table .vote-card {
+  @apply w-8 h-12 rounded border-2 flex items-center justify-center transition-all duration-300;
+}
+
+.participants-table .vote-card.hidden {
+  @apply bg-blue-500 text-white border-blue-600;
+}
+
+.participants-table .vote-card.revealed {
+  @apply bg-white border-gray-300;
+}
+
+.participants-table .vote-card.most-frequent {
+  @apply border-blue-500 shadow-md;
+}
+
+/* Responsive styles */
+@media (max-width: 640px) {
+  .participants-table {
+    @apply rounded-none shadow-none;
+  }
+
+  .participants-table th,
+  .participants-table td {
+    @apply px-4 py-3;
+  }
+
+  .participants-table .participant-avatar {
+    @apply h-8 w-8;
+  }
+
+  .participants-table .vote-card {
+    @apply w-6 h-9 text-sm;
+  }
+}
+
+/* Dark mode support */
+.dark .participants-table {
+  @apply bg-gray-800;
+}
+
+.dark .participants-table thead {
+  @apply bg-gray-900;
+}
+
+.dark .participants-table tbody {
+  @apply bg-gray-800 divide-gray-700;
+}
+
+.dark .participants-table tr:hover {
+  @apply bg-gray-700;
+}
+
+.dark .participants-table tr.current-user {
+  @apply bg-blue-900/20;
+}
+
+.dark .participants-table .participant-avatar {
+  @apply bg-gray-700;
+}
+
+.dark .participants-table .participant-name {
+  @apply text-gray-100;
+}
+
+.dark .participants-table .status-badge.voted {
+  @apply bg-green-900/30 text-green-300;
+}
+
+.dark .participants-table .status-badge.waiting {
+  @apply bg-gray-700 text-gray-300;
+}
+
+.dark .participants-table .vote-card.hidden {
+  @apply bg-blue-600 border-blue-700;
+}
+
+.dark .participants-table .vote-card.revealed {
+  @apply bg-gray-700 border-gray-600;
+}
+
+.dark .participants-table .vote-card.most-frequent {
+  @apply border-blue-400;
+} 
