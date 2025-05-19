@@ -25,3 +25,25 @@ variable "production_branch" {
   type        = string
   default     = "main"
 }
+
+variable "github_owner" {
+  description = "GitHub organization or username"
+  type        = string
+}
+
+variable "github_repo" {
+  description = "GitHub repository name"
+  type        = string
+}
+
+variable "enable_custom_domain" {
+  description = "Whether to enable custom domain"
+  type        = bool
+  default     = false
+}
+
+variable "custom_domain" {
+  description = "Custom domain name for the application"
+  type        = string
+  default     = ""
+}
