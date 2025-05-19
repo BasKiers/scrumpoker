@@ -12,10 +12,26 @@ import {
   updateParticipant,
 } from '../types';
 
+// Helper function to update participant with timestamp
+const updateParticipantWithTimestamp = (
+  state: RoomState,
+  userId: string,
+  updates: Partial<RoomState['participants'][string]>,
+) => {
+  return updateParticipant(state, userId, {
+    ...updates,
+    lastEventTimestamp: Date.now(),
+  });
+};
+
 class ConnectEventHandler implements EventHandler {
   handle(state: RoomState, event: WebSocketEvent): RoomState {
     if (!isConnectEvent(event)) return state;
-    return addParticipant(state, { userId: event.userId, name: event.name });
+    return addParticipant(state, {
+      userId: event.userId,
+      name: event.name,
+      lastEventTimestamp: Date.now(),
+    });
   }
 }
 
@@ -29,14 +45,14 @@ class DisconnectEventHandler implements EventHandler {
 class SelectCardEventHandler implements EventHandler {
   handle(state: RoomState, event: WebSocketEvent): RoomState {
     if (!isSelectCardEvent(event)) return state;
-    return updateParticipant(state, event.userId, { selectedCard: event.cardValue });
+    return updateParticipantWithTimestamp(state, event.userId, { selectedCard: event.cardValue });
   }
 }
 
 class SetNameEventHandler implements EventHandler {
   handle(state: RoomState, event: WebSocketEvent): RoomState {
     if (!isSetNameEvent(event)) return state;
-    return updateParticipant(state, event.userId, { name: event.name });
+    return updateParticipantWithTimestamp(state, event.userId, { name: event.name });
   }
 }
 
@@ -58,7 +74,11 @@ class ResetEventHandler implements EventHandler {
       participants: Object.fromEntries(
         Object.entries(state.participants).map(([userId, participant]) => [
           userId,
-          { ...participant, selectedCard: undefined },
+          {
+            ...participant,
+            selectedCard: undefined,
+            lastEventTimestamp: Date.now(),
+          },
         ]),
       ),
       card_status: 'hidden',

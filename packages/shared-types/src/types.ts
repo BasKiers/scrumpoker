@@ -8,6 +8,7 @@ export interface Participant {
   userId: string;
   name?: string;
   selectedCard?: string;
+  lastEventTimestamp?: number;
 }
 
 export interface BaseWebSocketEvent {
@@ -119,7 +120,11 @@ export function updateParticipant(
 }
 
 // Response types
-export type WebSocketResponse = SuccessResponse | ErrorResponse | StateSyncResponse | EventBroadcastResponse;
+export type WebSocketResponse =
+  | SuccessResponse
+  | ErrorResponse
+  | StateSyncResponse
+  | EventBroadcastResponse;
 
 export interface SuccessResponse {
   type: 'success';
@@ -159,6 +164,8 @@ export function isStateSyncResponse(response: WebSocketResponse): response is St
   return response.type === 'state_sync';
 }
 
-export function isEventBroadcastResponse(response: WebSocketResponse): response is EventBroadcastResponse {
+export function isEventBroadcastResponse(
+  response: WebSocketResponse,
+): response is EventBroadcastResponse {
   return response.type === 'event_broadcast';
 }
