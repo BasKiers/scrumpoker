@@ -90,9 +90,9 @@ const Room: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background flex flex-col">
-      <header className="border-b">
-        <div className="container mx-auto px-4 py-4">
+    <div className="min-h-screen flex flex-col">
+      <header className="bg-[#f7f8fa]">
+        <div className="container mx-auto px-4 py-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
               <Button
@@ -120,16 +120,16 @@ const Room: React.FC = () => {
         </div>
       </header>
 
-      <main className="flex-1 container mx-auto px-4 py-8">
-        <div className="max-w-5xl mx-auto w-full">
+      <main className="flex-1 flex justify-center px-2">
+        <div className="w-full max-w-7xl bg-white rounded-t-2xl shadow-xl p-8">
           {error && (
             <Alert variant="destructive" className="mb-6">
               <AlertDescription>{error}</AlertDescription>
             </Alert>
           )}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
             {/* Participants Section */}
-            <section className="bg-card rounded-lg border shadow-sm">
+            <section className="bg-white rounded-xl border shadow-sm">
               <div className="p-6">
                 <h2 className="text-lg font-medium mb-4">Participants</h2>
                 <ParticipantsTable
@@ -141,7 +141,7 @@ const Room: React.FC = () => {
             </section>
 
             {/* Voting Section */}
-            <section className="bg-card rounded-lg border shadow-sm">
+            <section className="bg-white rounded-xl border shadow-sm">
               <div className="p-6">
                 <div className="flex justify-between items-center mb-4">
                   <h2 className="text-lg font-medium">Voting</h2>
