@@ -10,6 +10,7 @@ import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Label } from './ui/label';
 import { Alert, AlertDescription } from './ui/alert';
+import { TooltipProvider, TooltipRoot, TooltipTrigger, TooltipContent } from './ui/tooltip';
 
 interface NameModalProps {
   isOpen: boolean;
@@ -21,6 +22,7 @@ interface NameModalProps {
 const NameModal: React.FC<NameModalProps> = ({ isOpen, onSubmit, onSkip, roomUrl }) => {
   const [name, setName] = React.useState('');
   const [error, setError] = React.useState<string>();
+  const [showCopied, setShowCopied] = React.useState(false);
 
   const validateName = (value: string): boolean => {
     // Allow alphanumeric characters and whitespace
@@ -48,74 +50,86 @@ const NameModal: React.FC<NameModalProps> = ({ isOpen, onSubmit, onSkip, roomUrl
 
   const copyRoomUrl = () => {
     navigator.clipboard.writeText(roomUrl);
+    setShowCopied(true);
+    setTimeout(() => setShowCopied(false), 2000);
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={(open) => {if(!open) {onSkip()}}}>
-      <DialogContent className="sm:max-w-[425px]">
-        <DialogHeader>
-          <DialogTitle>Enter Your Name</DialogTitle>
-          <DialogDescription>
-            Choose a name to identify yourself in the room
-          </DialogDescription>
-        </DialogHeader>
+    <TooltipProvider>
+      <Dialog open={isOpen} onOpenChange={(open) => {if(!open) {onSkip()}}}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>Enter Your Name</DialogTitle>
+            <DialogDescription>
+              Choose a name to identify yourself in the room
+            </DialogDescription>
+          </DialogHeader>
 
-        <div className="space-y-4 py-4">
-          <div className="space-y-2">
-            <Label htmlFor="room-url">Room URL</Label>
-            <div className="flex gap-2">
-              <Input
-                id="room-url"
-                value={roomUrl}
-                readOnly
-                className="flex-1"
-              />
-              <Button
-                variant="outline"
-                onClick={copyRoomUrl}
-                type="button"
-              >
-                Copy
-              </Button>
-            </div>
-          </div>
-
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="space-y-4 py-4">
             <div className="space-y-2">
-              <Label htmlFor="name">Your Name</Label>
-              {error && (
-                <Alert variant="destructive">
-                  <AlertDescription>{error}</AlertDescription>
-                </Alert>
-              )}
-              <Input
-                id="name"
-                value={name}
-                onChange={handleNameChange}
-                placeholder="Enter your name"
-                autoFocus
-              />
+              <Label htmlFor="room-url">Room URL</Label>
+              <div className="flex gap-2">
+                <Input
+                  id="room-url"
+                  value={roomUrl}
+                  readOnly
+                  className="flex-1"
+                />
+                <TooltipRoot open={showCopied}>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant="outline"
+                      onClick={copyRoomUrl}
+                      type="button"
+                    >
+                      Copy
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    Copied to clipboard!
+                  </TooltipContent>
+                </TooltipRoot>
+              </div>
             </div>
 
-            <div className="flex justify-end gap-2">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={onSkip}
-              >
-                Skip
-              </Button>
-              <Button
-                type="submit"
-                disabled={!name.trim() || !!error}
-              >
-                Join
-              </Button>
-            </div>
-          </form>
-        </div>
-      </DialogContent>
-    </Dialog>
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="name">Your Name</Label>
+                {error && (
+                  <Alert variant="destructive">
+                    <AlertDescription>{error}</AlertDescription>
+                  </Alert>
+                )}
+                <Input
+                  id="name"
+                  value={name}
+                  onChange={handleNameChange}
+                  placeholder="Enter your name"
+                  autoFocus
+                  data-1p-ignore
+                />
+              </div>
+
+              <div className="flex justify-end gap-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={onSkip}
+                >
+                  Skip
+                </Button>
+                <Button
+                  type="submit"
+                  disabled={!name.trim() || !!error}
+                >
+                  Join
+                </Button>
+              </div>
+            </form>
+          </div>
+        </DialogContent>
+      </Dialog>
+    </TooltipProvider>
   );
 };
 
