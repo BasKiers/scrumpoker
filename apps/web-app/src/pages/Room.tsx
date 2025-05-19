@@ -14,6 +14,7 @@ import { TooltipProvider, TooltipRoot, TooltipTrigger, TooltipContent } from '@/
 import '../styles/responsive.css';
 
 const STORY_POINTS = ['?', '1', '2', '3', '5', '8', '13', '20'];
+const ACTIVE_PARTICPANT_TIMEOUT = 1000 * 60 * 30; // 30 minutes
 
 const Room: React.FC = () => {
   const { roomId } = useParams<{ roomId: string }>();
@@ -29,7 +30,7 @@ const Room: React.FC = () => {
   });
 
   const { participants, card_status, error, isSynced } = useRoomStore();
-  const activeParticipants = Object.fromEntries(Object.entries(participants).filter(([, {name}]) => Boolean(name)));
+  const activeParticipants = Object.fromEntries(Object.entries(participants).filter(([, {name, lastEventTimestamp}]) => Boolean(name) && Date.now() - (lastEventTimestamp || 0) < ACTIVE_PARTICPANT_TIMEOUT));
 
   // Check if user needs to set their name after state sync
   React.useEffect(() => {
@@ -122,7 +123,7 @@ const Room: React.FC = () => {
                         <Copy className="h-4 w-4" />
                       </Button>
                     </TooltipTrigger>
-                    <TooltipContent>
+                    <TooltipContent sideOffset={2}>
                       Copied to clipboard!
                     </TooltipContent>
                   </TooltipRoot>

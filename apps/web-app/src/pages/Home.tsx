@@ -80,7 +80,7 @@ const Home: React.FC = () => {
                           <Copy className="h-4 w-4" />
                         </Button>
                       </TooltipTrigger>
-                      <TooltipContent>
+                      <TooltipContent sideOffset={2}>
                         Copied to clipboard!
                       </TooltipContent>
                     </TooltipRoot>

@@ -85,7 +85,7 @@ const NameModal: React.FC<NameModalProps> = ({ isOpen, onSubmit, onSkip, roomUrl
                       Copy
                     </Button>
                   </TooltipTrigger>
-                  <TooltipContent>
+                  <TooltipContent sideOffset={2}>
                     Copied to clipboard!
                   </TooltipContent>
                 </TooltipRoot>
@@ -113,14 +113,15 @@ const NameModal: React.FC<NameModalProps> = ({ isOpen, onSubmit, onSkip, roomUrl
               <div className="flex justify-end gap-2">
                 <Button
                   type="button"
-                  variant="outline"
+                  variant="secondary"
                   onClick={onSkip}
                 >
-                  Skip
+                  Spectate
                 </Button>
                 <Button
                   type="submit"
                   disabled={!name.trim() || !!error}
+                  variant="outline"
                 >
                   Join
                 </Button>
