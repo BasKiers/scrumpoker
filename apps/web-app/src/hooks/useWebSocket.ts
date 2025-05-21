@@ -64,7 +64,8 @@ export function useWebSocket({
         }
 
 		const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-		const wsUrl = `${protocol}//localhost:8787/room/${roomId}/websocket?userId=${userId}`;
+		const hostname = import.meta.env.VITE_DEV === 'true' ? 'localhost:8787' : 'scrumpoker-api.kiers-bas.workers.dev';
+		const wsUrl = `${protocol}//${hostname}/room/${roomId}/websocket?userId=${userId}`;
 
 		try {
 			const socket = new WebSocket(wsUrl);
