@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>Scrum Poker WebSocket Test</title>
+		<style>
+			body {
+				font-family: system-ui, -apple-system, sans-serif;
+				max-width: 800px;
+				margin: 0 auto;
+				padding: 20px;
+			}
+			.container {
+				display: grid;
+				grid-template-columns: 1fr 1fr;
+				gap: 20px;
+			}
+			.panel {
+				border: 1px solid #ccc;
+				padding: 15px;
+				border-radius: 8px;
+			}
+			.controls {
+				margin-bottom: 20px;
+			}
+			.log {
+				height: 400px;
+				overflow-y: auto;
+				background: #f5f5f5;
+				padding: 10px;
+				border-radius: 4px;
+				font-family: monospace;
+			}
+			.log-entry {
+				margin: 5px 0;
+				padding: 5px;
+				border-bottom: 1px solid #ddd;
+			}
+			.log-entry.sent { color: #0066cc; }
+			.log-entry.received { color: #006600; }
+			.log-entry.error { color: #cc0000; }
+			button {
+				padding: 8px 16px;
+				margin: 5px;
+				border: none;
+				border-radius: 4px;
+				background: #0066cc;
+				color: white;
+				cursor: pointer;
+			}
+			button:hover { background: #0052a3; }
+			button:disabled {
+				background: #cccccc;
+				cursor: not-allowed;
+			}
+			input {
+				padding: 8px;
+				margin: 5px;
+				border: 1px solid #ccc;
+				border-radius: 4px;
+			}
+			.card-grid {
+				display: grid;
+				grid-template-columns: repeat(5, 1fr);
+				gap: 10px;
+				margin: 10px 0;
+			}
+			.card {
+				padding: 10px;
+				border: 1px solid #ccc;
+				border-radius: 4px;
+				text-align: center;
+				cursor: pointer;
+			}
+			.card:hover {
+				background: #f0f0f0;
+			}
+			.card.selected {
+				background: #0066cc;
+				color: white;
+			}
+		</style>
+	</head>
+	<body>
+		<h1>Scrum Poker WebSocket Test</h1>
+		
+		<div class="container">
+			<div class="panel">
+				<h2>Connection</h2>
+				<div class="controls">
+					<input type="text" id="userId" placeholder="User ID" value="user-1">
+					<input type="text" id="roomId" placeholder="Room ID" value="test-room">
+					<input type="text" id="userName" placeholder="Display Name" value="Test User">
+					<button id="connect">Connect</button>
+					<button id="disconnect" disabled>Disconnect</button>
+				</div>
+			</div>
+
+			<div class="panel">
+				<h2>Actions</h2>
+				<div class="controls">
+					<button id="toggleCards" disabled>Toggle Cards</button>
+					<button id="reset" disabled>Reset</button>
+				</div>
+				<div class="card-grid">
+					<div class="card" data-value="1">1</div>
+					<div class="card" data-value="2">2</div>
+					<div class="card" data-value="3">3</div>
+					<div class="card" data-value="5">5</div>
+					<div class="card" data-value="8">8</div>
+					<div class="card" data-value="13">13</div>
+					<div class="card" data-value="21">21</div>
+					<div class="card" data-value="34">34</div>
+					<div class="card" data-value="55">55</div>
+					<div class="card" data-value="89">89</div>
+				</div>
+			</div>
+		</div>
+
+		<div class="panel">
+			<h2>Event Log</h2>
+			<div id="log" class="log"></div>
+		</div>
+
+		<script>
+			let ws = null;
+			const log = document.getElementById('log');
+			const connectBtn = document.getElementById('connect');
+			const disconnectBtn = document.getElementById('disconnect');
+			const toggleCardsBtn = document.getElementById('toggleCards');
+			const resetBtn = document.getElementById('reset');
+			const cards = document.querySelectorAll('.card');
+
+			function addLogEntry(message, type = 'info') {
+				const entry = document.createElement('div');
+				entry.className = `log-entry ${type}`;
+				entry.textContent = `${new Date().toLocaleTimeString()} - ${message}`;
+				log.appendChild(entry);
+				log.scrollTop = log.scrollHeight;
+			}
+
+			function sendMessage(message) {
+				if (ws && ws.readyState === WebSocket.OPEN) {
+					ws.send(JSON.stringify(message));
+					addLogEntry(`Sent: ${JSON.stringify(message)}`, 'sent');
+				}
+			}
+
+			function connect() {
+				const userId = document.getElementById('userId').value;
+				const roomId = document.getElementById('roomId').value;
+				const userName = document.getElementById('userName').value;
+
+				if (!userId) {
+					addLogEntry('Please enter a User ID', 'error');
+					return;
+				}
+
+				const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+				const wsUrl = `${protocol}//${window.location.host}/${roomId}/websocket?userId=${encodeURIComponent(userId)}`;
+
+				ws = new WebSocket(wsUrl);
+
+				ws.onopen = () => {
+					addLogEntry('Connected to WebSocket server');
+					connectBtn.disabled = true;
+					disconnectBtn.disabled = false;
+					toggleCardsBtn.disabled = false;
+					resetBtn.disabled = false;
+					cards.forEach(card => card.style.pointerEvents = 'auto');
+
+					// Send connect event with name
+					sendMessage({
+						type: 'connect',
+						userId,
+						name: userName
+					});
+				};
+
+				ws.onmessage = (event) => {
+					try {
+						const data = JSON.parse(event.data);
+						addLogEntry(`Received: ${JSON.stringify(data)}`, 'received');
+					} catch (err) {
+						addLogEntry(`Error parsing message: ${err.message}`, 'error');
+					}
+				};
+
+				ws.onclose = () => {
+					addLogEntry('Disconnected from WebSocket server');
+					connectBtn.disabled = false;
+					disconnectBtn.disabled = true;
+					toggleCardsBtn.disabled = true;
+					resetBtn.disabled = true;
+					cards.forEach(card => {
+						card.classList.remove('selected');
+						card.style.pointerEvents = 'none';
+					});
+				};
+
+				ws.onerror = (error) => {
+					addLogEntry(`WebSocket error: ${error.message}`, 'error');
+				};
+			}
+
+			function disconnect() {
+				if (ws) {
+					ws.close();
+				}
+			}
+
+			connectBtn.addEventListener('click', connect);
+			disconnectBtn.addEventListener('click', disconnect);
+
+			toggleCardsBtn.addEventListener('click', () => {
+				sendMessage({
+					type: 'toggle_cards',
+					value: 'revealed'
+				});
+			});
+
+			resetBtn.addEventListener('click', () => {
+				sendMessage({
+					type: 'reset'
+				});
+				cards.forEach(card => card.classList.remove('selected'));
+			});
+
+			cards.forEach(card => {
+				card.addEventListener('click', () => {
+					if (ws && ws.readyState === WebSocket.OPEN) {
+						const value = card.dataset.value;
+						cards.forEach(c => c.classList.remove('selected'));
+						card.classList.add('selected');
+						sendMessage({
+							type: 'select_card',
+							userId: document.getElementById('userId').value,
+							cardValue: value
+						});
+					}
+				});
+			});
+		</script>
+	</body>
+</html>

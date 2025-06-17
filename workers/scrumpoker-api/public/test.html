@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Scrum Poker WebSocket Test</title>
+    <style>
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .card {
+            display: inline-block;
+            padding: 10px 20px;
+            margin: 5px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .card.selected {
+            background-color: #e3f2fd;
+            border-color: #2196f3;
+        }
+        .card.revealed {
+            background-color: #f5f5f5;
+        }
+        .error {
+            color: #d32f2f;
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #d32f2f;
+            border-radius: 4px;
+            display: none;
+        }
+        .log {
+            margin-top: 20px;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            height: 200px;
+            overflow-y: auto;
+            font-family: monospace;
+        }
+        .participants {
+            margin: 20px 0;
+        }
+        .participant {
+            padding: 5px;
+            margin: 5px 0;
+            border: 1px solid #eee;
+            border-radius: 4px;
+        }
+        button {
+            padding: 8px 16px;
+            margin: 5px;
+            border: none;
+            border-radius: 4px;
+            background-color: #2196f3;
+            color: white;
+            cursor: pointer;
+        }
+        button:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+        input {
+            padding: 8px;
+            margin: 5px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Scrum Poker WebSocket Test</h1>
+    
+    <div id="connection">
+        <h2>Connection</h2>
+        <input type="text" id="userId" placeholder="Enter user ID">
+        <input type="text" id="roomId" placeholder="Enter room ID" value="test-room">
+        <button onclick="connect()">Connect</button>
+        <button onclick="disconnect()" id="disconnectBtn" disabled>Disconnect</button>
+    </div>
+
+    <div id="error" class="error"></div>
+
+    <div id="userInfo" style="display: none;">
+        <h2>User Info</h2>
+        <input type="text" id="userName" placeholder="Enter your name">
+        <button onclick="setName()">Set Name</button>
+    </div>
+
+    <div id="cardSelection" style="display: none;">
+        <h2>Card Selection</h2>
+        <div id="cards">
+            <div class="card" onclick="selectCard('1')">1</div>
+            <div class="card" onclick="selectCard('2')">2</div>
+            <div class="card" onclick="selectCard('3')">3</div>
+            <div class="card" onclick="selectCard('5')">5</div>
+            <div class="card" onclick="selectCard('8')">8</div>
+            <div class="card" onclick="selectCard('13')">13</div>
+            <div class="card" onclick="selectCard('21')">21</div>
+            <div class="card" onclick="selectCard('?')">?</div>
+        </div>
+    </div>
+
+    <div id="roomControls" style="display: none;">
+        <h2>Room Controls</h2>
+        <button onclick="toggleCards()" id="toggleBtn">Reveal Cards</button>
+        <button onclick="resetRoom()" id="resetBtn" disabled>Reset Room</button>
+    </div>
+
+    <div id="participants" class="participants">
+        <h2>Participants</h2>
+        <div id="participantsList"></div>
+    </div>
+
+    <div class="log">
+        <h2>Event Log</h2>
+        <div id="log"></div>
+    </div>
+
+    <script>
+        let ws = null;
+        let selectedCard = null;
+        let roomState = null;
+
+        function connect() {
+            const userId = document.getElementById('userId').value;
+            const roomId = document.getElementById('roomId').value;
+            
+            if (!userId) {
+                showError('Please enter a user ID');
+                return;
+            }
+
+            ws = new WebSocket(`ws://localhost:8787/${roomId}/websocket?userId=${userId}`);
+            
+            ws.onopen = () => {
+                log('Connected to WebSocket');
+                document.getElementById('disconnectBtn').disabled = false;
+                document.getElementById('userInfo').style.display = 'block';
+                document.getElementById('cardSelection').style.display = 'block';
+                document.getElementById('roomControls').style.display = 'block';
+            };
+
+            ws.onclose = () => {
+                log('Disconnected from WebSocket');
+                document.getElementById('disconnectBtn').disabled = true;
+                document.getElementById('userInfo').style.display = 'none';
+                document.getElementById('cardSelection').style.display = 'none';
+                document.getElementById('roomControls').style.display = 'none';
+            };
+
+            ws.onmessage = (event) => {
+                const data = JSON.parse(event.data);
+                log(`Received: ${JSON.stringify(data)}`);
+
+                if (data.type === 'state_sync') {
+                    roomState = data.state;
+                    updateUI();
+                } else if (data.type === 'error') {
+                    showError(data.message);
+                }
+            };
+        }
+
+        function disconnect() {
+            if (ws) {
+                ws.close();
+                ws = null;
+            }
+        }
+
+        function setName() {
+            const name = document.getElementById('userName').value;
+            if (!name) {
+                showError('Please enter a name');
+                return;
+            }
+            sendEvent({
+                type: 'set_name',
+                userId: document.getElementById('userId').value,
+                name: name
+            });
+        }
+
+        function selectCard(cardValue) {
+            if (!ws) return;
+            
+            // Update UI
+            document.querySelectorAll('.card').forEach(card => {
+                card.classList.remove('selected');
+                if (card.textContent === cardValue) {
+                    card.classList.add('selected');
+                }
+            });
+            
+            selectedCard = cardValue;
+            sendEvent({
+                type: 'select_card',
+                userId: document.getElementById('userId').value,
+                cardValue: cardValue
+            });
+        }
+
+        function toggleCards() {
+            if (!ws || !roomState) return;
+            
+            const newStatus = roomState.card_status === 'hidden' ? 'revealed' : 'hidden';
+            sendEvent({
+                type: 'toggle_cards',
+                value: newStatus
+            });
+        }
+
+        function resetRoom() {
+            if (!ws) return;
+            sendEvent({
+                type: 'reset'
+            });
+        }
+
+        function sendEvent(event) {
+            if (!ws) {
+                showError('Not connected to WebSocket');
+                return;
+            }
+            ws.send(JSON.stringify(event));
+            log(`Sent: ${JSON.stringify(event)}`);
+        }
+
+        function updateUI() {
+            if (!roomState) return;
+
+            // Update participants list
+            const participantsList = document.getElementById('participantsList');
+            participantsList.innerHTML = '';
+            
+            Object.entries(roomState.participants).forEach(([userId, participant]) => {
+                const div = document.createElement('div');
+                div.className = 'participant';
+                div.textContent = `${participant.name || userId}: ${participant.selectedCard || 'No card selected'}`;
+                participantsList.appendChild(div);
+            });
+
+            // Update card visibility
+            document.querySelectorAll('.card').forEach(card => {
+                if (roomState.card_status === 'revealed') {
+                    card.classList.add('revealed');
+                } else {
+                    card.classList.remove('revealed');
+                }
+            });
+
+            // Update buttons
+            document.getElementById('toggleBtn').textContent = 
+                roomState.card_status === 'hidden' ? 'Reveal Cards' : 'Hide Cards';
+            document.getElementById('resetBtn').disabled = 
+                roomState.card_status === 'hidden';
+        }
+
+        function showError(message) {
+            const errorDiv = document.getElementById('error');
+            errorDiv.textContent = message;
+            errorDiv.style.display = 'block';
+            setTimeout(() => {
+                errorDiv.style.display = 'none';
+            }, 5000);
+        }
+
+        function log(message) {
+            const logDiv = document.getElementById('log');
+            const entry = document.createElement('div');
+            entry.textContent = `${new Date().toLocaleTimeString()}: ${message}`;
+            logDiv.appendChild(entry);
+            logDiv.scrollTop = logDiv.scrollHeight;
+        }
+    </script>
+</body>
+</html> 
