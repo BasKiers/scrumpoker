@@ -38,14 +38,23 @@ resource "cloudflare_workers_script" "scrumpoker_api" {
   script_name   = "scrumpoker-api"
   content       = file("${path.module}/../workers/scrumpoker-api/dist/index.js")
   build_command = "pnpm install && pnpm --filter=scrumpoker-api... build"
+  compatibility_date = "2025-05-15"
+  compatibility_flags = ["nodejs_compat", "global_fetch_strictly_public"]
 }
 
-# Optionally, add DNS records for custom domain
-# resource "cloudflare_record" "web_app" {
-#   count    = var.enable_custom_domain ? 1 : 0
-#   zone_id  = var.cloudflare_zone_id
-#   name     = var.custom_domain
-#   value    = cloudflare_pages_project.web_app.subdomain
-#   type     = "CNAME"
-#   proxied  = true
-# }
+# Custom domain configuration
+resource "cloudflare_dns_record" "web_app" {
+  zone_id  = var.cloudflare_zone_id
+  name     = var.custom_domain
+  content  = cloudflare_pages_project.web_app.subdomain
+  type     = "CNAME"
+  proxied  = true
+  ttl      = 1
+}
+
+# Add custom domain to Pages project
+resource "cloudflare_pages_domain" "web_app" {
+  account_id   = var.cloudflare_account_id
+  project_name = cloudflare_pages_project.web_app.name
+  name         = var.custom_domain
+}

@@ -1,10 +1,6 @@
-name = "web-app"
-type = "javascript"
-compatibility_date = "2024-05-15"
-
-[site]
-bucket = "dist"
-entry-point = "."
+name = "scrumpoker-web-app"
+compatibility_date = "2024-03-19"
+pages_build_output_dir = "dist"
 
 [env.production]
 # Add production-specific settings here if needed 
