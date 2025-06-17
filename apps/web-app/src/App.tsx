@@ -1,17 +1,21 @@
-import React from 'react';
+import React, { Suspense } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import Home from './pages/Home';
-import Room from './pages/Room';
+import { routes } from './routes';
 import { UserProvider } from './contexts/UserContext';
 
 const App: React.FC = () => {
   return (
     <UserProvider>
       <Router>
-        <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="/room/:roomId" element={<Room />} />
-        </Routes>
+        <Suspense
+          fallback={<div className="flex items-center justify-center min-h-screen">Loading...</div>}
+        >
+          <Routes>
+            {routes.map((route, index) => (
+              <Route key={index} path={route.path} element={route.element} />
+            ))}
+          </Routes>
+        </Suspense>
       </Router>
     </UserProvider>
   );
