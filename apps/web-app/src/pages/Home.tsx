@@ -79,8 +79,8 @@ const Home: React.FC = () => {
   return (
     <TooltipProvider>
       <div className="min-h-screen bg-[#f7f8fa] flex flex-col">
-        <header className="bg-[#f7f8fa]">
-          <div className="container mx-auto px-4 py-3">
+        <header className="bg-[#f7f8fa] flex justify-center px-2">
+          <div className="w-full max-w-7xl px-4 py-3">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-4">
                 <div className="flex items-center gap-2">
