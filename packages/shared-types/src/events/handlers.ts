@@ -30,7 +30,8 @@ class ConnectEventHandler implements EventHandler {
     return addParticipant(state, {
       userId: event.userId,
       name: event.name,
-      lastEventTimestamp: Date.now(),
+      selectedCard: event.selectedCard,
+      lastEventTimestamp: event.lastEventTimestamp ?? Date.now(),
     });
   }
 }
@@ -77,7 +78,6 @@ class ResetEventHandler implements EventHandler {
           {
             ...participant,
             selectedCard: undefined,
-            lastEventTimestamp: Date.now(),
           },
         ]),
       ),
@@ -93,4 +93,4 @@ export const eventHandlers = new Map<string, EventHandler>([
   ['set_name', new SetNameEventHandler()],
   ['toggle_cards', new ToggleCardsEventHandler()],
   ['reset', new ResetEventHandler()],
-]); 
+]);

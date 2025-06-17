@@ -1,5 +1,12 @@
 import { z } from 'zod';
 
+const participantSchema = z.object({
+  userId: z.string(),
+  name: z.string().optional(),
+  selectedCard: z.string().optional(),
+  lastEventTimestamp: z.number().optional(),
+});
+
 // Base schema for all events
 export const baseEventSchema = z.object({
   type: z.string(),
@@ -9,8 +16,7 @@ export const baseEventSchema = z.object({
 // Connect event schema
 export const connectEventSchema = baseEventSchema.extend({
   type: z.literal('connect'),
-  userId: z.string(),
-  name: z.string().optional(),
+  ...participantSchema.shape,
 });
 
 // Disconnect event schema
@@ -83,13 +89,7 @@ export const stateUpdateResponseSchema = z.object({
   type: z.literal('state_update'),
   state: z.object({
     roomId: z.string(),
-    participants: z.record(
-      z.object({
-        userId: z.string(),
-        name: z.string().optional(),
-        selectedCard: z.string().optional(),
-      }),
-    ),
+    participants: z.record(participantSchema),
     card_status: z.enum(['hidden', 'revealed']),
   }),
 });

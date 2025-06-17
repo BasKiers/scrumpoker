@@ -15,4 +15,4 @@ export function handleEvent(state: RoomState, event: WebSocketEvent): RoomState 
   } catch (error) {
     throw new Error(error instanceof Error ? error.message : 'Unknown error occurred');
   }
-} 
+}

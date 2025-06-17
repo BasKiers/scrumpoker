@@ -23,10 +23,8 @@ export type WebSocketEvent =
   | ToggleCardsEvent
   | ResetEvent;
 
-export interface ConnectEvent extends BaseWebSocketEvent {
+export interface ConnectEvent extends BaseWebSocketEvent, Participant {
   type: 'connect';
-  userId: string;
-  name?: string;
 }
 
 export interface DisconnectEvent extends BaseWebSocketEvent {
