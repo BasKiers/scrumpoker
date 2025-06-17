@@ -18,7 +18,7 @@ const ParticipantsTable: React.FC<ParticipantsTableProps> = ({
 
   useEffect(() => {
     const cardCounts: Record<string, number> = {};
-    Object.values(participants).forEach(participant => {
+    Object.values(participants).forEach((participant) => {
       if (participant.selectedCard) {
         cardCounts[participant.selectedCard] = (cardCounts[participant.selectedCard] || 0) + 1;
       }
@@ -28,7 +28,10 @@ const ParticipantsTable: React.FC<ParticipantsTableProps> = ({
     let mostFrequent: string | null = null;
 
     Object.entries(cardCounts).forEach(([card, count]) => {
-      if (count > maxCount || (count === maxCount && parseInt(card) > parseInt(mostFrequent || '0'))) {
+      if (
+        count > maxCount ||
+        (count === maxCount && parseInt(card) > parseInt(mostFrequent || '0'))
+      ) {
         maxCount = count;
         mostFrequent = card;
       }
@@ -71,25 +74,40 @@ const ParticipantsTable: React.FC<ParticipantsTableProps> = ({
       <table className="min-w-full divide-y divide-gray-200">
         <thead className="bg-gray-50">
           <tr>
-            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+            <th
+              scope="col"
+              className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+            >
               Name
             </th>
-            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+            <th
+              scope="col"
+              className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+            >
               Status
             </th>
-            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+            <th
+              scope="col"
+              className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+            >
               Vote
             </th>
           </tr>
         </thead>
-        <Reorder.Group as="tbody" axis="y" values={sortedParticipants} onReorder={() => {}} className="bg-white divide-y divide-gray-200 table-auto">
+        <Reorder.Group
+          as="tbody"
+          axis="y"
+          values={sortedParticipants}
+          onReorder={() => {}}
+          className="bg-white divide-y divide-gray-200 table-auto"
+        >
           {sortedParticipants.map((participant) => (
             <Reorder.Item
               key={participant.userId}
               value={participant}
               className={`${participant.userId === currentUserId ? 'bg-blue-50' : ''}`}
-              style={{height: '81px'}}
-              as='tr'
+              style={{ height: '81px' }}
+              as="tr"
               drag={false}
               transition={{ delay: 0.25 }}
             >
@@ -103,18 +121,18 @@ const ParticipantsTable: React.FC<ParticipantsTableProps> = ({
                     </div>
                   </div>
                   <div className="ml-4">
-                    <div className="text-sm font-medium text-gray-900">
-                      {participant.name}
-                    </div>
+                    <div className="text-sm font-medium text-gray-900">{participant.name}</div>
                   </div>
                 </div>
               </td>
               <td className="px-6 py-4 whitespace-nowrap">
-                <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                  participant.selectedCard 
-                    ? 'bg-green-100 text-green-800' 
-                    : 'bg-gray-100 text-gray-800'
-                }`}>
+                <span
+                  className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                    participant.selectedCard
+                      ? 'bg-green-100 text-green-800'
+                      : 'bg-gray-100 text-gray-800'
+                  }`}
+                >
                   {participant.selectedCard ? 'Voted' : 'Waiting'}
                 </span>
               </td>
@@ -125,8 +143,12 @@ const ParticipantsTable: React.FC<ParticipantsTableProps> = ({
                     initial={{ rotateY: 180 }}
                     animate={{
                       rotateY: cardsRevealed ? 0 : 180,
-                      borderColor: cardsRevealed ? participant.selectedCard === mostFrequentCard ? 'oklch(0.623 0.214 259.815)' : 'oklch(70.7% 0.022 261.325)' : 'oklch(0.92 0.004 286.32)',
-                      backgroundColor: cardsRevealed ? '#FFFFFF' : ''
+                      borderColor: cardsRevealed
+                        ? participant.selectedCard === mostFrequentCard
+                          ? 'oklch(0.623 0.214 259.815)'
+                          : 'oklch(70.7% 0.022 261.325)'
+                        : 'oklch(0.92 0.004 286.32)',
+                      backgroundColor: cardsRevealed ? '#FFFFFF' : '',
                     }}
                     transition={{ duration: 0.3 }}
                   >
@@ -144,4 +166,4 @@ const ParticipantsTable: React.FC<ParticipantsTableProps> = ({
   );
 };
 
-export default ParticipantsTable; 
+export default ParticipantsTable;

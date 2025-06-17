@@ -3,7 +3,12 @@ import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { humanId } from 'human-id';
 import { Copy } from 'lucide-react';
-import { TooltipProvider, TooltipRoot, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip';
+import {
+  TooltipProvider,
+  TooltipRoot,
+  TooltipTrigger,
+  TooltipContent,
+} from '@/components/ui/tooltip';
 
 const Home: React.FC = () => {
   const navigate = useNavigate();
@@ -12,13 +17,34 @@ const Home: React.FC = () => {
   const [showCopied, setShowCopied] = useState(false);
 
   const createRoom = () => {
-    const roomId = humanId({ 
+    const roomId = humanId({
       separator: '-',
       capitalize: false,
       adjectiveCount: 1,
-      addAdverb: true
+      addAdverb: true,
     });
     navigate(`/room/${roomId}`);
+  };
+
+  const extractRoomIdFromInput = (input: string): string => {
+    const trimmed = input.trim();
+
+    // Check if the input looks like a URL (contains protocol and /room/)
+    const urlPattern = /^https?:\/\/[^/]+\/room\/(.+)$/i;
+    const match = trimmed.match(urlPattern);
+
+    if (match && match[1]) {
+      return match[1];
+    }
+
+    return trimmed;
+  };
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const rawValue = e.target.value;
+    const extractedRoomId = extractRoomIdFromInput(rawValue);
+    setJoinRoomId(extractedRoomId);
+    setError(''); // Clear any existing errors when user types
   };
 
   const handleJoinRoom = (e: React.FormEvent) => {
@@ -63,7 +89,7 @@ const Home: React.FC = () => {
                     <input
                       type="text"
                       value={joinRoomId}
-                      onChange={(e) => setJoinRoomId(e.target.value)}
+                      onChange={handleInputChange}
                       placeholder="Enter room ID"
                       className="flex h-8 w-48 rounded-md border border-input bg-background px-3 py-1 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                     />
@@ -80,21 +106,13 @@ const Home: React.FC = () => {
                           <Copy className="h-4 w-4" />
                         </Button>
                       </TooltipTrigger>
-                      <TooltipContent sideOffset={2}>
-                        Copied to clipboard!
-                      </TooltipContent>
+                      <TooltipContent sideOffset={2}>Copied to clipboard!</TooltipContent>
                     </TooltipRoot>
-                    <Button
-                      type="submit"
-                      size="sm"
-                      disabled={!joinRoomId.trim()}
-                    >
+                    <Button type="submit" size="sm" disabled={!joinRoomId.trim()}>
                       Join
                     </Button>
                   </form>
-                  {error && (
-                    <p className="text-sm text-destructive">{error}</p>
-                  )}
+                  {error && <p className="text-sm text-destructive">{error}</p>}
                 </div>
               </div>
             </div>
@@ -107,14 +125,11 @@ const Home: React.FC = () => {
                 Collaborative Story Point Estimation
               </h2>
               <p className="max-w-[700px] text-muted-foreground text-lg sm:text-xl">
-                Create a room to start estimating story points with your team. Simple, fast, and effective.
+                Create a room to start estimating story points with your team. Simple, fast, and
+                effective.
               </p>
               <div className="flex flex-col items-center space-y-4 w-full max-w-md">
-                <Button 
-                  size="lg" 
-                  onClick={createRoom}
-                  className="text-lg px-8 py-6 w-full"
-                >
+                <Button size="lg" onClick={createRoom} className="text-lg px-8 py-6 w-full">
                   Create Room
                 </Button>
               </div>

@@ -19,18 +19,14 @@
 /* Mobile-first layout */
 @media (max-width: 640px) {
   .room-page {
-    --card-width: 4rem;
-    --card-height: 6rem;
-    --card-gap: 0.5rem;
+    --card-width: 3.5rem;
+    --card-height: 5.25rem;
+    --card-gap: 1.25rem;
     --content-padding: 0.75rem;
   }
 
-  .room-page header {
-    padding: var(--content-padding);
-  }
-
-  .room-page main {
-    padding: var(--content-padding);
+  .room-page {
+    min-width: 100vw;
   }
 
   .story-point-cards {
@@ -43,7 +39,7 @@
   }
 
   .story-point-card span {
-    font-size: 1.25rem;
+    font-size: 1.125rem;
   }
 
   .participants-table {
@@ -79,6 +75,10 @@
     --card-gap: 0.75rem;
   }
 
+  .room-page {
+    min-width: 80vw;
+  }
+
   .story-point-cards {
     gap: var(--card-gap);
   }
@@ -108,6 +108,59 @@
   .participants-table .card {
     width: 3rem;
     height: 4rem;
+  }
+
+  /* Participants section height constraints */
+  .room-page .participants-section {
+    max-height: calc(
+      100vh - var(--header-height) - 4rem
+    ); /* Account for header, padding, and margins */
+    display: flex;
+    flex-direction: column;
+  }
+
+  .room-page .participants-section > div {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-height: 0; /* Allow flexbox to shrink */
+  }
+
+  .room-page .participants-section .overflow-x-auto {
+    flex: 1;
+    min-height: 0; /* Allow flexbox to shrink */
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* Table-specific scrolling constraints */
+  .room-page .participants-section table {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-height: 0;
+  }
+
+  .room-page .participants-section thead {
+    flex-shrink: 0; /* Keep header fixed */
+    position: sticky;
+    top: 0;
+    background-color: #f9fafb; /* bg-gray-50 */
+    z-index: 10;
+  }
+
+  .room-page .participants-section tbody {
+    flex: 1;
+    overflow-y: auto;
+    display: block;
+    min-height: 0;
+  }
+
+  .room-page .participants-section thead tr,
+  .room-page .participants-section tbody tr {
+    display: table;
+    width: 100%;
+    table-layout: fixed;
   }
 }
 
@@ -154,4 +207,4 @@
     background-color: #1e3a8a;
     color: #ffffff;
   }
-} 
+}

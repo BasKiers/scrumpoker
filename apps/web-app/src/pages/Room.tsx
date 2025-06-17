@@ -10,7 +10,12 @@ import { useUser } from '@/contexts/UserContext';
 import NameModal from '../components/NameModal';
 import { ConfirmationModal } from '../components/ConfirmationModal';
 import { ArrowLeft, Copy } from 'lucide-react';
-import { TooltipProvider, TooltipRoot, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip';
+import {
+  TooltipProvider,
+  TooltipRoot,
+  TooltipTrigger,
+  TooltipContent,
+} from '@/components/ui/tooltip';
 import '../styles/responsive.css';
 
 const STORY_POINTS = ['?', '1', '2', '3', '5', '8', '13', '20'];
@@ -24,17 +29,27 @@ const Room: React.FC = () => {
   const [showResetConfirmation, setShowResetConfirmation] = React.useState(false);
   const [showCopied, setShowCopied] = React.useState(false);
 
-  const { selectCard, toggleCards, reset, setName: setRoomName } = useRoomActions({
+  const {
+    selectCard,
+    toggleCards,
+    reset,
+    setName: setRoomName,
+  } = useRoomActions({
     roomId: roomId || 'default',
     userId,
   });
 
   const { participants, card_status, error, isSynced } = useRoomStore();
-  const activeParticipants = Object.fromEntries(Object.entries(participants).filter(([, {name, lastEventTimestamp}]) => Boolean(name) && Date.now() - (lastEventTimestamp || 0) < ACTIVE_PARTICPANT_TIMEOUT));
+  const activeParticipants = Object.fromEntries(
+    Object.entries(participants).filter(
+      ([, { name, lastEventTimestamp }]) =>
+        Boolean(name) && Date.now() - (lastEventTimestamp || 0) < ACTIVE_PARTICPANT_TIMEOUT,
+    ),
+  );
 
   // Check if user needs to set their name after state sync
   React.useEffect(() => {
-    if(!isSynced) return;
+    if (!isSynced) return;
     const currentParticipant = participants[userId];
     if (currentParticipant?.name === undefined) {
       if (name) {
@@ -43,7 +58,7 @@ const Room: React.FC = () => {
       } else {
         setShowNameModal('joining');
       }
-    } else if(showNameModal === 'joining') {
+    } else if (showNameModal === 'joining') {
       setShowNameModal('done');
     }
   }, [userId, isSynced, participants, showNameModal, name, setRoomName]);
@@ -57,7 +72,7 @@ const Room: React.FC = () => {
   };
 
   const handleReset = () => {
-    const hasSelectedCards = Object.values(activeParticipants).some(p => p.selectedCard);
+    const hasSelectedCards = Object.values(activeParticipants).some((p) => p.selectedCard);
     if (card_status !== 'revealed' && hasSelectedCards) {
       setShowResetConfirmation(true);
     } else {
@@ -123,9 +138,7 @@ const Room: React.FC = () => {
                         <Copy className="h-4 w-4" />
                       </Button>
                     </TooltipTrigger>
-                    <TooltipContent sideOffset={2}>
-                      Copied to clipboard!
-                    </TooltipContent>
+                    <TooltipContent sideOffset={2}>Copied to clipboard!</TooltipContent>
                   </TooltipRoot>
                 </div>
               </div>
@@ -133,17 +146,17 @@ const Room: React.FC = () => {
           </div>
         </header>
 
-        <main className="flex-1 flex justify-center px-2">
-          <div className="w-full max-w-7xl bg-white rounded-t-2xl shadow-xl p-8">
+        <main className="flex-1 flex justify-center px-2 room-page">
+          <div className="w-full max-w-7xl bg-white rounded-t-2xl shadow-xl p-4 lg:p-8">
             {error && (
               <Alert variant="destructive" className="mb-6">
                 <AlertDescription>{error}</AlertDescription>
               </Alert>
             )}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-8">
               {/* Participants Section */}
-              <section className="bg-white rounded-xl border shadow-sm">
-                <div className="p-6">
+              <section className="bg-white rounded-xl border shadow-sm order-2 lg:order-1 participants-section">
+                <div className="p-4 lg:p-6">
                   <h2 className="text-lg font-medium mb-4">Participants</h2>
                   <ParticipantsTable
                     participants={activeParticipants}
@@ -154,18 +167,20 @@ const Room: React.FC = () => {
               </section>
 
               {/* Voting Section */}
-              <section className="bg-white rounded-xl border shadow-sm">
-                <div className="p-6">
+              <section className="bg-white rounded-xl border shadow-sm h-fit order-1 lg:order-2">
+                <div className="p-4 lg:p-6">
                   <div className="flex justify-between items-center mb-4">
                     <h2 className="text-lg font-medium">Voting</h2>
                     <Button
                       variant="outline"
-                      onClick={() => hasName ? handleNameSkip() : setShowNameModal('re-enter')}
+                      onClick={() => (hasName ? handleNameSkip() : setShowNameModal('re-enter'))}
                     >
                       {hasName ? 'Spectate Voting' : 'Join Voting'}
                     </Button>
                   </div>
-                  <div className="flex flex-wrap gap-4 justify-center story-point-cards">
+                  <div
+                    className={`flex flex-wrap gap-4 justify-center story-point-cards ${!hasName ? 'hidden lg:flex' : ''}`}
+                  >
                     {STORY_POINTS.map((value) => (
                       <StoryPointCard
                         key={value}
@@ -180,14 +195,11 @@ const Room: React.FC = () => {
                     <Button
                       variant="primary"
                       onClick={handleShowCards}
-                      disabled={!Object.values(activeParticipants).some(p => p.selectedCard)}
+                      disabled={!Object.values(activeParticipants).some((p) => p.selectedCard)}
                     >
                       {card_status === 'revealed' ? 'Hide Cards' : 'Show Cards'}
                     </Button>
-                    <Button
-                      variant="warning"
-                      onClick={handleReset}
-                    >
+                    <Button variant="warning" onClick={handleReset}>
                       Reset
                     </Button>
                   </div>
@@ -215,4 +227,4 @@ const Room: React.FC = () => {
   );
 };
 
-export default Room; 
+export default Room;
